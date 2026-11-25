@@ -16,12 +16,13 @@
     const scr = document.createElement('div'); scr.id = 'navscreen'; scr.hidden = true;
     scr.innerHTML = `
       <div id="nsTop"><b id="nsArrow">⬆</b><div class="nsT"><div id="nsDist">–</div><div id="nsStreet"></div></div><button id="nsClose" aria-label="Schließen">✕</button></div>
-      <div id="nsSearch"><div class="nsRow"><input id="nsQ" type="search" placeholder="Ziel eingeben (Adresse, Ort, Name)" autocomplete="off"><button id="nsGo" class="act pri">Suchen</button></div><div id="nsOpt"></div><div id="nsRes"></div></div>
+      <div id="nsSearch"><div id="nsHead"><button id="nsBack">← Zurück zum Tacho</button></div><input id="nsQ" type="search" placeholder="Ziel eingeben: Straße, Ort, Name" autocomplete="off" autocapitalize="words" enterkeyhint="search"><button id="nsGo" class="act pri">Ziel suchen</button><div id="nsOpt"></div><div id="nsRes"></div></div>
       <canvas id="nsMap"></canvas>
       <div id="nsLive"><div><b id="lvSpeed">0</b><small id="lvUnit">km/h</small></div><div><b id="lvLimit">–</b><small>Limit</small></div><div><b id="lvAlt">–</b><small id="lvAltN">Höhe</small></div><div><b id="lvDir">–</b><small>Richtung</small></div></div>
-      <div id="nsBot"><div><b id="nsRem">–</b><small>Rest</small></div><div><b id="nsEta">–</b><small>Ankunft</small></div><div><b id="nsDur">–</b><small>Dauer</small></div><button id="nsStop" class="act">Beenden</button></div>`;
+      <div id="nsBot"><div><b id="nsRem">–</b><small>Rest</small></div><div><b id="nsEta">–</b><small>Ankunft</small></div><div><b id="nsDur">–</b><small>Dauer</small></div><button id="nsTacho" class="act">Tacho</button><button id="nsStop" class="act">Beenden</button></div>`;
     document.body.appendChild(scr);
-    $('nsClose').onclick = hide; $('nsStop').onclick = () => stop(true);
+    $('nsClose').onclick = hide; $('nsBack').onclick = hide; $('nsTacho').onclick = hide;
+    window.addEventListener('popstate', () => { if (N.open) { N.open = false; $('navscreen').hidden = true; layout(); } }); $('nsStop').onclick = () => stop(true);
     $('nsGo').onclick = () => search($('nsQ').value);
     $('nsQ').addEventListener('keydown', (e) => { if (e.key === 'Enter') search($('nsQ').value); });
     $('nsOpt').addEventListener('click', (e) => {
@@ -52,8 +53,8 @@
     $('nsLive').hidden = !on; $('nsSearch').hidden = on; $('nsMap').hidden = !on; $('nsBot').hidden = !on; $('nsTop').hidden = !on;
     $('navmini').hidden = !on || N.open;
   }
-  function show() { N.open = true; $('navscreen').hidden = false; layout(); if (N.route) draw(); else setTimeout(() => $('nsQ').focus(), 50); }
-  function hide() { N.open = false; $('navscreen').hidden = true; layout(); }
+  function show() { if (!N.open) { try { history.pushState({ navi: 1 }, ''); } catch (e) { /* egal */ } } N.open = true; $('navscreen').hidden = false; layout(); if (N.route) draw(); else setTimeout(() => $('nsQ').focus(), 50); }
+  function hide() { if (N.open && history.state && history.state.navi) { history.back(); return; } N.open = false; $('navscreen').hidden = true; layout(); }
 
   async function search(q) {
     q = String(q || '').trim(); if (!q) return;

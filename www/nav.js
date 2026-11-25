@@ -36,18 +36,36 @@
     return { shape, cum, len: geo, dur: dur && len ? dur * (geo / len) : (dur || 0), steps };
   }
 
-  // ---- Suche ----
+  // ---- Suche: Photon (Komoot) und Nominatim gleichzeitig, der erste Treffer zählt ----
+  const mapPhoton = (j) => ((j && j.features) || []).map((f) => {
+    const p = f.properties || {}, c = (f.geometry && f.geometry.coordinates) || [];
+    const street = p.street ? p.street + (p.housenumber ? ' ' + p.housenumber : '') : '';
+    const head = p.name || street || p.city || '';
+    const rest = [street && p.name ? street : '', p.postcode, p.city || p.town || p.village || p.county, p.state, p.country].filter((x) => x && x !== head);
+    return { name: [head].concat(rest).join(', '), lat: +c[1], lon: +c[0], kind: p.osm_value };
+  }).filter((x) => isFinite(x.lat) && isFinite(x.lon) && x.name);
+  const mapNom = (j) => (j || []).map((x) => ({ name: clean(x.display_name).split(',').slice(0, 4).join(','), lat: +x.lat, lon: +x.lon, kind: x.type }));
   async function geocode(q, near, fetchFn) {
-    let url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&accept-language=de&q=' + encodeURIComponent(q);
-    if (near && near.lat != null) {
-      const d = 1.2; url += `&viewbox=${near.lon - d},${near.lat + d},${near.lon + d},${near.lat - d}`;
-    }
-    const r = await fetchFn(url, { headers: { 'Accept-Language': 'de' } });
-    if (!r.ok) throw new Error('Suche HTTP ' + r.status);
-    const j = await r.json();
-    const list = (j || []).map((x) => ({ name: clean(x.display_name).split(',').slice(0, 3).join(','), lat: +x.lat, lon: +x.lon, kind: x.type }));
-    if (near && near.lat != null) list.sort((a, b) => hav(near.lat, near.lon, a.lat, a.lon) - hav(near.lat, near.lon, b.lat, b.lon));
-    return list;
+    const bias = near && near.lat != null ? `&lat=${near.lat}&lon=${near.lon}` : '';
+    const nomView = near && near.lat != null ? `&viewbox=${near.lon - 1.5},${near.lat + 1.5},${near.lon + 1.5},${near.lat - 1.5}` : '';
+    const jobs = [
+      ['Photon', `https://photon.komoot.io/api/?limit=8&lang=de&q=${encodeURIComponent(q)}${bias}`, mapPhoton],
+      ['Nominatim', `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&accept-language=de&q=${encodeURIComponent(q)}${nomView}`, mapNom]
+    ];
+    const errs = [];
+    const res = await new Promise((resolve) => {
+      let left = jobs.length, done = false;
+      jobs.forEach(([name, url, map]) => {
+        const to = new Promise((_, rej) => setTimeout(() => rej(new Error('Zeitüberschreitung')), 9000));
+        Promise.race([Promise.resolve(fetchFn(url, { headers: { 'Accept-Language': 'de' } })).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }), to])
+          .then((j) => { const l = map(j); if (l.length && !done) { done = true; resolve(l); } else if (!l.length) errs.push(name + ': leer'); })
+          .catch((e) => { errs.push(name + ': ' + ((e && e.message) || e)); })
+          .finally(() => { left--; if (!left && !done) resolve(null); });
+      });
+    });
+    if (!res) { const hard = errs.filter((e) => !/leer/.test(e)); if (hard.length >= jobs.length) throw new Error('Suche nicht erreichbar (' + hard[0] + ')'); return []; }
+    if (near && near.lat != null) res.sort((x, y) => hav(near.lat, near.lon, x.lat, x.lon) - hav(near.lat, near.lon, y.lat, y.lon));
+    return res;
   }
 
   // ---- Route: Valhalla (mehrere Varianten mit Profil, Kurven, Streckenart) ----

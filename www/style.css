@@ -205,3 +205,8 @@ body.cd #mic svg{width:24px;height:24px}
 #nsLive{display:flex;gap:8px;margin-bottom:8px} #nsLive div{flex:1;background:#0f1a2e;border-radius:14px;padding:8px 6px;text-align:center;display:flex;flex-direction:column} #nsLive b{font-size:22px} #nsLive small{opacity:.65;font-size:11px}
 #navscreen[hidden],#navmini[hidden],#nsSearch[hidden],#nsMap[hidden],#nsBot[hidden],#nsTop[hidden],#nsLive[hidden]{display:none!important}
 #nsBot b{white-space:nowrap} #nsBot .act{flex:1.2}
+#nsHead{margin-bottom:12px} #nsBack{background:#1b2c4a;border:1px solid #2f8bff66;color:#fff;font-size:18px;font-weight:700;padding:14px 18px;border-radius:14px;width:100%;text-align:left}
+#nsQ{display:block;width:100%;box-sizing:border-box;font-size:21px;padding:18px 16px;min-height:62px;border-radius:16px;border:2px solid #2f8bff;background:#0f1a2e;color:#fff}
+#nsGo{display:block;width:100%;margin-top:10px;font-size:19px;padding:16px;min-height:56px;border-radius:16px}
+.nsChip{padding:12px 16px;font-size:16px} #nsBot .act{min-height:52px;font-size:16px}
+#nsClose{width:52px;height:52px;font-size:24px}
