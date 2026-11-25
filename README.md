@@ -30,3 +30,6 @@ GitHub Actions baut bei jedem Push die Debug-APK (Artefakt `navi-debug-apk`). Sy
 ## Vermeiden
 In den Navi-Optionen unter „Vermeiden“: Autobahn, Mautstraßen, Fähren und „Innenstadt umfahren“ (Städte entlang der Route werden als Sperrfläche umfahren). Lässt sich etwas nicht vermeiden, sagt das Navi es an.
 Sprache: „Autobahn vermeiden“, „Ohne Maut“, „Keine Fähren“, „Innenstadt umfahren“, „Alles erlauben“.
+
+## Tacho-Ordner
+Jeder erstellte oder geladene Tacho wird automatisch in `Dokumente/Tacho-Designs` auf dem Handy gespeichert (*.tacho.json). Einstellungen → Tacho-Designs: „Alle Tachos in Ordner speichern“ und „Tachos aus Ordner laden“.
