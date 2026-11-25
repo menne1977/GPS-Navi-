@@ -33,3 +33,9 @@ Sprache: „Autobahn vermeiden“, „Ohne Maut“, „Keine Fähren“, „Inne
 
 ## Tacho-Ordner
 Jeder erstellte oder geladene Tacho wird automatisch in `Dokumente/Tacho-Designs` auf dem Handy gespeichert (*.tacho.json). Einstellungen → Tacho-Designs: „Alle Tachos in Ordner speichern“ und „Tachos aus Ordner laden“.
+
+## Karte, Beenden, Offline
+- Beenden: roter Knopf „Beenden“ unten, ⛔ an der Karte, „✕ Ende“ im Mini-Fenster im Tacho, oder „Navigation beenden“ per Sprache.
+- Karte läuft flüssig mit (zwischen den GPS-Punkten weitergerechnet). 🧭 wechselt Fahrtrichtung oben / Norden oben, mit einem Finger lässt sich die Karte verschieben, 🎯 zentriert (nach 15 s automatisch).
+- 💾 speichert die Route samt Straßen entlang der Strecke offline; sie erscheint dann unter „Offline-Routen“ in der Suche und lässt sich ohne Internet fahren (Neuberechnen bei Abweichung braucht Internet).
+- Sprache: „Karte nach Norden“, „Fahrtrichtung oben“, „Karte zentrieren“, „Route offline speichern“, „Offline-Route <Name>“.

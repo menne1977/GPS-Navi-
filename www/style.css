@@ -222,3 +222,10 @@ body.cd #mic svg{width:24px;height:24px}
 .nsSv{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:4px} .nsSv button{background:#1b2c4a;border:0;border-radius:10px;color:#fff;font-size:16px;width:44px;height:34px}
 #navmini{top:calc(max(8px,env(safe-area-inset-top)) + 54px)}
 #nsBot{gap:6px} #nsBot div{min-width:0;flex:1 1 0} #nsBot b{font-size:18px} #nsBot .act{flex:0 0 auto;padding:0 12px;min-height:50px;font-size:15px}
+/* Beenden, Ausrichtung, Offline */
+#navmini #nmEnd{align-self:center;flex:0 0 auto;width:56px;height:56px;border-radius:14px;border:1px solid #ff6b5a99;background:#5a1a16;color:#fff;font-size:24px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0} #navmini #nmEnd small{font-size:11px;opacity:.9}
+#nsZoom{flex-direction:column;flex-wrap:wrap;max-height:calc(100% - 16px);align-content:flex-end;gap:6px} #nsZoom button{width:46px;height:46px;font-size:18px}
+#nsZoom #nsEnd{background:#7a1f18;border-color:#ff6b5a} #nsZoom #nsCtr.on,#nsZoom #nsZa.on{background:#2f8bff;border-color:#fff}
+#nsBot #nsStop{background:#7a1f18;border-color:#ff6b5a;color:#fff;font-weight:800}
+#nsOff{margin-top:12px}
+#nsBot{flex-wrap:wrap;gap:8px 6px} #nsBot div{flex:1 1 28%;min-width:0} #nsBot b{font-size:20px} #nsBot .act{flex:1 1 44%;min-height:54px;font-size:17px;padding:0 10px}

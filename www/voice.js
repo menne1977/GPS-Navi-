@@ -94,6 +94,11 @@
     if (/^(hier (ist|wohne ich|bin ich) zuhause|hier wohne ich|hier ist zu hause)$/.test(s)) return { act: 'navsave', kind: 'home' };
     if (/^(hier arbeite ich|hier ist (die )?arbeit)$/.test(s)) return { act: 'navsave', kind: 'work' };
     if ((m = s.match(/^(?:karten ?farbe|karte)\s+(nacht|tag|kontrast|natur|grau)$/))) return { act: 'navtheme', id: m[1] };
+    if (/^(?:karte\s+)?(nach norden|norden oben|nordausrichtung|nord oben|karte norden)$/.test(s)) return { act: 'naviorient', v: 'north', say: 'Norden oben.' };
+    if (/^(?:karte\s+)?(fahrtrichtung oben|nach fahrtrichtung|karte drehen|karte mitdrehen|richtung oben)$/.test(s)) return { act: 'naviorient', v: 'heading', say: 'Fahrtrichtung oben.' };
+    if (/^(karte zentrieren|karte mittig|zentrieren|karte zurück|mich zeigen|karte auf mich)$/.test(s)) return { act: 'naviorient', v: 'center', say: 'Karte zentriert.' };
+    if (/^(route|navigation|karte)\s+(offline\s+)?(speichern|herunterladen|laden)$|^(route|navigation) offline$|^offline speichern$/.test(s)) return { act: 'navoffline', say: 'Ich speichere die Route offline.' };
+    if ((m = s.match(/^offline[- ]route\s+(.+)$/))) return { act: 'navoffline', name: m[1], say: 'Ich starte die Offline-Route.' };
     if ((m = s.match(/^(?:karte\s+)?(zoom|zoome|zoomen)?\s*(rein|näher|vergrößern|raus|weiter weg|verkleinern|automatisch)$/)) && (m[1] || /^(näher|vergrößern|weiter weg|verkleinern)$/.test(m[2]))) return { act: 'navzoom', d: /rein|näher|vergrößern/.test(m[2]) ? 'in' : /automatisch/.test(m[2]) ? 'auto' : 'out' };
     if ((m = s.match(/^(navi|navigation|route|routing)\s+(für\s+|mit\s+)?(das\s+)?(motorrad|auto|pkw|zu fuß|fuß)$/))) { const v = m[4] === 'motorrad' ? 'motorrad' : /fuß/.test(m[4]) ? 'fuss' : 'auto'; return { act: 'navopt', p: { veh: v }, say: 'Navigation: ' + { motorrad: 'Motorrad', fuss: 'zu Fuß', auto: 'Auto' }[v] + '.' }; }
     if ((m = s.match(/\b(wenige|wenig|keine|mittlere|mittel|viele|egal)\s+kurven\b/))) { const k = { wenige: 'wenig', wenig: 'wenig', keine: 'wenig', mittlere: 'mittel', mittel: 'mittel', viele: 'viele', egal: 'egal' }[m[1]]; return { act: 'navopt', p: { veh: 'motorrad', curves: k }, say: { wenig: 'Wenig Kurven.', mittel: 'Mittlere Kurven.', viele: 'Viele Kurven.', egal: 'Kurven egal.' }[k] }; }
@@ -239,7 +244,7 @@
     'Tageskilometer zurücksetzen', 'Höchstgeschwindigkeit zurücksetzen', 'Aktivierungswort ändern auf Cockpit',
     'Sprachantworten aus', 'Lautstärke 60', 'Online aus', 'Einstellungen',
     'Öffne Spotify', 'Schließe YouTube', 'Zurück', 'Startbildschirm', 'Scrolle nach unten', 'Tippe auf Suche', 'Schreibe Hallo', 'Musik Pause', 'Nächster Titel', 'Lauter',
-    'Navigiere nach Köln Hauptbahnhof', 'Wie weit noch', 'Navi Motorrad', 'Viele Kurven', 'Kürzeste Route', 'Gemütliche Route durch den Wald', 'Navigation beenden', 'Abbiegung wiederholen', 'Zeige die Karte', 'Autobahn vermeiden', 'Ohne Maut', 'Keine Fähren', 'Innenstadt umfahren', 'Alles erlauben', 'Hier geparkt', 'Zurück zum Auto', 'Zu Fuß weiter', 'Navigiere nach Hause', 'Speichere diesen Ort als Arbeit', 'Karte zoom rein', 'Kartenfarbe Tag', 'Tankstellen', 'Stau', 'Split mit Navigation', 'Split beenden', 'Gesamtkilometer auf 12345', 'Navi Sygic'
+    'Navigiere nach Köln Hauptbahnhof', 'Wie weit noch', 'Navi Motorrad', 'Viele Kurven', 'Kürzeste Route', 'Gemütliche Route durch den Wald', 'Navigation beenden', 'Abbiegung wiederholen', 'Zeige die Karte', 'Karte nach Norden', 'Fahrtrichtung oben', 'Route offline speichern', 'Autobahn vermeiden', 'Ohne Maut', 'Keine Fähren', 'Innenstadt umfahren', 'Alles erlauben', 'Hier geparkt', 'Zurück zum Auto', 'Zu Fuß weiter', 'Navigiere nach Hause', 'Speichere diesen Ort als Arbeit', 'Karte zoom rein', 'Kartenfarbe Tag', 'Tankstellen', 'Stau', 'Split mit Navigation', 'Split beenden', 'Gesamtkilometer auf 12345', 'Navi Sygic'
   ];
 
   const api = { parse, num, tileOf, HELP, COLORS, THEMES };

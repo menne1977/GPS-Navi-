@@ -668,6 +668,8 @@
       case 'split': return doSplit(a);
       case 'navto': if (S.navi === 'intern') return NavUI.go(a.q); navigateTo({ query: a.q }); return Promise.resolve('Navigation nach ' + a.q + ' gestartet.');
       case 'navopt': { const o = NavUI.opts(); const p = Object.assign({}, a.p || {}); if (a.add) p.scenic = o.scenic.includes(a.add) ? o.scenic : o.scenic.concat(a.add); NavUI.setOpt(p); return Promise.resolve(a.say || 'Eingestellt.'); }
+      case 'naviorient': if (a.v === 'center') NavUI.recenter(); else NavUI.setOrient(a.v); return Promise.resolve(a.say);
+      case 'navoffline': return a.name ? NavUI.startOffline(a.name) : NavUI.saveOffline();
       case 'navavoid': if (a.id === 'all') NavUI.setOpt({ avoid: [] }); else NavUI.setAvoid(a.id, a.on); return Promise.resolve(a.say || 'Eingestellt.');
       case 'navsave': return NavUI.saveHere(a.kind, a.label);
       case 'navwalk': return NavUI.walkOn();
@@ -814,7 +816,7 @@
       case 'settotal': S.total = a.n; msg = 'Gesamtkilometer ' + a.n + '.'; break;
       case 'navi': S.navi = a.id; msg = 'Navigation mit ' + NAVI[a.id] + '.'; break;
       case 'phone': phoneAct(a).then((t) => { if (t) say(t); }).catch((e) => say(errMsg(e))); break;
-      case 'openapp': case 'closeapp': case 'sys': case 'scroll': case 'click': case 'type': case 'media': case 'sysvol': case 'split': case 'navto': case 'navopt': case 'navstop': case 'navinfo': case 'navrepeat': case 'navshow': case 'navsave': case 'navwalk': case 'navtheme': case 'navzoom': case 'navavoid':
+      case 'openapp': case 'closeapp': case 'sys': case 'scroll': case 'click': case 'type': case 'media': case 'sysvol': case 'split': case 'navto': case 'navopt': case 'navstop': case 'navinfo': case 'navrepeat': case 'navshow': case 'navsave': case 'navwalk': case 'navtheme': case 'navzoom': case 'navavoid': case 'naviorient': case 'navoffline':
         if (!['sys', 'media', 'sysvol', 'openapp'].includes(a.act) && !/^nav/.test(a.act) && !S.appCtl && a.act !== 'split') { msg = 'Schalte zuerst unter Einstellungen, Apps „Andere Apps per Sprache bedienen“ ein.'; break; }
         appAct(a).then((t) => { if (t) say(t); }).catch((e) => say(errMsg(e)));
         break;

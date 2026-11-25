@@ -379,6 +379,6 @@
   const fmtDist = (m) => (m == null ? '–' : m >= 1000 ? (m / 1000).toFixed(m >= 10000 ? 0 : 1).replace('.', ',') + ' km' : Math.round(m / 10) * 10 + ' m');
   const fmtTime = (s) => { const m = Math.round(s / 60); return m >= 60 ? Math.floor(m / 60) + ' h ' + (m % 60) + ' min' : m + ' min'; };
 
-  const api = { geocode, route, plan, describe, curviness, scenic, LAND, Guide, decode6, hav, ARROW, fmtDist, fmtTime, distSay: Guide.dist };
+  const api = { finish, overpass, geocode, route, plan, describe, curviness, scenic, LAND, Guide, decode6, hav, ARROW, fmtDist, fmtTime, distSay: Guide.dist };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Nav = api;
 })(typeof window !== 'undefined' ? window : globalThis);
