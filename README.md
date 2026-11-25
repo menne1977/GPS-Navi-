@@ -1,0 +1,21 @@
+# Navi (GPS-Tacho mit eigenem Navi)
+
+Android-App (Capacitor). Alles aus dem GPS-Tacho (Tempo, Tempolimit, Höhe NN/NAP/Ellipsoid, Kompass, Tankstellen, Stau, Sprachsteuerung, eigene Tacho-Designs) plus ein **eigenes Navi**.
+Die App hat eine eigene App-ID (`de.menne.navi`) und läuft neben dem Tacho.
+
+## Navi
+- Ziel per Text (🧭) oder Sprache: „Navigiere nach Köln Hauptbahnhof“. Suche über Nominatim (OpenStreetMap).
+- Route über Valhalla (OSM Deutschland), ersatzweise OSRM. Kein Schlüssel nötig, kein Live-Verkehr, kein Offline-Betrieb.
+- Abbiegepfeil, Entfernung, Straße, Rest, Ankunft, Ansagen (800 m, 250 m, jetzt), automatische Neuberechnung, Kartenansicht in Fahrtrichtung.
+- Tempo, Tempolimit, Höhe und Richtung bleiben auf dem Navi-Bildschirm sichtbar.
+- Werte für eigene Tachos: `navdist`, `navturn`, `navstreet`, `navremain`, `navdur`, `naveta`.
+
+## Motorrad und Streckenwahl
+- Fahrzeug: Auto oder Motorrad (Motorrad-Profil von Valhalla).
+- Kurven (Motorrad): egal, wenig, mittel, viele. Die App rechnet mehrere Varianten und misst die Kurvigkeit selbst.
+- Streckenart: ausgewogen, schnellste, kürzeste, sparsam (kurz und ohne Autobahn), längste sinnvolle, gemütlich.
+- Landschaft: Wald, Felder und Wiesen, Wasser, Heide. Die App prüft per OpenStreetMap, wie viel Strecke an der gewünschten Landschaft liegt, und nimmt die schönste Variante.
+- Sprache: „Navi Motorrad“, „Viele Kurven“, „Kürzeste Route“, „Gemütliche Route durch den Wald“, „Wie weit noch“, „Navigation beenden“.
+
+## Bauen
+GitHub Actions baut bei jedem Push die Debug-APK (Artefakt `navi-debug-apk`). Symbol: `node`-frei, `python3 tools/make-icon.py`.

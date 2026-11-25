@@ -1,0 +1,10 @@
+{
+  "appId": "de.menne.gps",
+  "appName": "Navi",
+  "webDir": "www",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}
