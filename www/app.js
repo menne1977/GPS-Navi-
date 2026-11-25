@@ -632,7 +632,7 @@
     return '';
   }
   function appAct(a) {
-    if (!AppCtl && a.act !== 'navto') return Promise.resolve('Das geht nur in der APK.');
+    if (!AppCtl && !/^nav/.test(a.act)) return Promise.resolve('Das geht nur in der APK.');
     const ok = (t) => () => t, bad = (t) => (e) => (t ? t : errMsg(e));
     switch (a.act) {
       case 'openapp': return a.navi ? AppCtl.launch({ name: S.navi === 'sygic' ? 'sygic' : 'maps' }).then((r) => 'Ich öffne ' + r.label + '.').catch(bad('Keine Navigations-App gefunden.'))
@@ -647,6 +647,10 @@
       case 'split': return doSplit(a);
       case 'navto': if (S.navi === 'intern') return NavUI.go(a.q); navigateTo({ query: a.q }); return Promise.resolve('Navigation nach ' + a.q + ' gestartet.');
       case 'navopt': { const o = NavUI.opts(); const p = Object.assign({}, a.p || {}); if (a.add) p.scenic = o.scenic.includes(a.add) ? o.scenic : o.scenic.concat(a.add); NavUI.setOpt(p); return Promise.resolve(a.say || 'Eingestellt.'); }
+      case 'navsave': return NavUI.saveHere(a.kind, a.label);
+      case 'navwalk': return NavUI.walkOn();
+      case 'navtheme': NavUI.setTheme(a.id); return Promise.resolve('Kartenfarbe ' + a.id + '.');
+      case 'navzoom': if (a.d === 'in') NavUI.zoomIn(); else if (a.d === 'out') NavUI.zoomOut(); else NavUI.zoomAuto(); return Promise.resolve('Karte.');
       case 'navstop': return Promise.resolve(NavUI.stop(true));
       case 'navinfo': return Promise.resolve(NavUI.info());
       case 'navrepeat': return Promise.resolve(NavUI.repeat());
@@ -788,8 +792,8 @@
       case 'settotal': S.total = a.n; msg = 'Gesamtkilometer ' + a.n + '.'; break;
       case 'navi': S.navi = a.id; msg = 'Navigation mit ' + NAVI[a.id] + '.'; break;
       case 'phone': phoneAct(a).then((t) => { if (t) say(t); }).catch((e) => say(errMsg(e))); break;
-      case 'openapp': case 'closeapp': case 'sys': case 'scroll': case 'click': case 'type': case 'media': case 'sysvol': case 'split': case 'navto':
-        if (!['sys', 'media', 'sysvol', 'openapp', 'navto'].includes(a.act) && !S.appCtl && a.act !== 'split') { msg = 'Schalte zuerst unter Einstellungen, Apps „Andere Apps per Sprache bedienen“ ein.'; break; }
+      case 'openapp': case 'closeapp': case 'sys': case 'scroll': case 'click': case 'type': case 'media': case 'sysvol': case 'split': case 'navto': case 'navopt': case 'navstop': case 'navinfo': case 'navrepeat': case 'navshow': case 'navsave': case 'navwalk': case 'navtheme': case 'navzoom':
+        if (!['sys', 'media', 'sysvol', 'openapp'].includes(a.act) && !/^nav/.test(a.act) && !S.appCtl && a.act !== 'split') { msg = 'Schalte zuerst unter Einstellungen, Apps „Andere Apps per Sprache bedienen“ ein.'; break; }
         appAct(a).then((t) => { if (t) say(t); }).catch((e) => say(errMsg(e)));
         break;
       default: return;

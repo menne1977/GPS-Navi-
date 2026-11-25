@@ -87,7 +87,15 @@
 
     // --- Navigation ---
     if ((m = s.match(/^(navi|navigation|navigationsapp|karten ?app)\s*(auf|ist|mit)?\s*(google|google maps|sygic|andere|fragen|jedes mal)$/))) return { act: 'navi', id: /sygic/.test(m[3]) ? 'sygic' : /google/.test(m[3]) ? 'google' : /andere/.test(m[3]) ? 'geo' : 'ask' };
-    if ((m = s.match(/^(navi|navigation|route|routing)\s+(für\s+|mit\s+)?(das\s+)?(motorrad|auto|pkw)$/))) return { act: 'navopt', p: { veh: m[4] === 'motorrad' ? 'motorrad' : 'auto' }, say: 'Navigation für ' + (m[4] === 'motorrad' ? 'Motorrad' : 'Auto') + '.' };
+    if (/(hier|ich habe|ich hab)( \w+)? geparkt|parkplatz (speichern|merken)|(speichere|merke) (den |meinen )?parkplatz|ich parke hier|hier steht mein auto|auto (hier )?geparkt/.test(s)) return { act: 'navsave', kind: 'park' };
+    if (/^(zum|zu meinem|zurück zum|zurück zu meinem|bring mich zum|bring mich zu meinem|führe mich zum|führe mich zu meinem|weg zum) (auto|parkplatz)$|wo (habe ich (mein auto )?geparkt|steht mein auto)/.test(s)) return { act: 'navto', q: 'auto' };
+    if (/zu fuß weiter|^fußweg$|^zu fuß$|^weiter zu fuß$/.test(s)) return { act: 'navwalk' };
+    if ((m = s.match(/(?:speichere|merke|setze|speicher)\s+(?:diesen ort|diese stelle|das|hier|den standort|meinen standort|den ort)?\s*(?:als|auf)\s+(zuhause|zu hause|arbeit|favorit)(?:\s+(.+))?$/))) return { act: 'navsave', kind: m[1] === 'arbeit' ? 'work' : m[1] === 'favorit' ? 'fav' : 'home', label: m[2] || '' };
+    if (/^(hier (ist|wohne ich|bin ich) zuhause|hier wohne ich|hier ist zu hause)$/.test(s)) return { act: 'navsave', kind: 'home' };
+    if (/^(hier arbeite ich|hier ist (die )?arbeit)$/.test(s)) return { act: 'navsave', kind: 'work' };
+    if ((m = s.match(/^(?:karten ?farbe|karte)\s+(nacht|tag|kontrast|natur|grau)$/))) return { act: 'navtheme', id: m[1] };
+    if ((m = s.match(/^(?:karte\s+)?(zoom|zoome|zoomen)?\s*(rein|näher|vergrößern|raus|weiter weg|verkleinern|automatisch)$/)) && (m[1] || /^(näher|vergrößern|weiter weg|verkleinern)$/.test(m[2]))) return { act: 'navzoom', d: /rein|näher|vergrößern/.test(m[2]) ? 'in' : /automatisch/.test(m[2]) ? 'auto' : 'out' };
+    if ((m = s.match(/^(navi|navigation|route|routing)\s+(für\s+|mit\s+)?(das\s+)?(motorrad|auto|pkw|zu fuß|fuß)$/))) { const v = m[4] === 'motorrad' ? 'motorrad' : /fuß/.test(m[4]) ? 'fuss' : 'auto'; return { act: 'navopt', p: { veh: v }, say: 'Navigation: ' + { motorrad: 'Motorrad', fuss: 'zu Fuß', auto: 'Auto' }[v] + '.' }; }
     if ((m = s.match(/\b(wenige|wenig|keine|mittlere|mittel|viele|egal)\s+kurven\b/))) { const k = { wenige: 'wenig', wenig: 'wenig', keine: 'wenig', mittlere: 'mittel', mittel: 'mittel', viele: 'viele', egal: 'egal' }[m[1]]; return { act: 'navopt', p: { veh: 'motorrad', curves: k }, say: { wenig: 'Wenig Kurven.', mittel: 'Mittlere Kurven.', viele: 'Viele Kurven.', egal: 'Kurven egal.' }[k] }; }
     if ((m = s.match(/\b(schnellste|kürzeste|sparsamste|sparsame|längste|gemütliche|ausgewogene|normale)\s+(route|strecke)\b/))) { const k = { schnellste: 'schnell', kürzeste: 'kurz', sparsamste: 'sparsam', sparsame: 'sparsam', längste: 'lang', gemütliche: 'gemuetlich', ausgewogene: 'normal', normale: 'normal' }[m[1]]; return { act: 'navopt', p: { type: k }, say: m[1].charAt(0).toUpperCase() + m[1].slice(1) + ' Route.' }; }
     if ((m = s.match(/\bdurch\s+(den\s+|die\s+|das\s+)?(wald|wälder|felder|feld|wiesen|wasser|seen|heide)\b/))) { const k = { wald: 'wald', wälder: 'wald', felder: 'felder', feld: 'felder', wiesen: 'felder', wasser: 'wasser', seen: 'wasser', heide: 'heide' }[m[2]]; return { act: 'navopt', add: k, say: 'Landschaft: ' + m[2] + '.' }; }
@@ -226,7 +234,7 @@
     'Tageskilometer zurücksetzen', 'Höchstgeschwindigkeit zurücksetzen', 'Aktivierungswort ändern auf Cockpit',
     'Sprachantworten aus', 'Lautstärke 60', 'Online aus', 'Einstellungen',
     'Öffne Spotify', 'Schließe YouTube', 'Zurück', 'Startbildschirm', 'Scrolle nach unten', 'Tippe auf Suche', 'Schreibe Hallo', 'Musik Pause', 'Nächster Titel', 'Lauter',
-    'Navigiere nach Köln Hauptbahnhof', 'Wie weit noch', 'Navi Motorrad', 'Viele Kurven', 'Kürzeste Route', 'Gemütliche Route durch den Wald', 'Navigation beenden', 'Abbiegung wiederholen', 'Zeige die Karte', 'Tankstellen', 'Stau', 'Split mit Navigation', 'Split beenden', 'Gesamtkilometer auf 12345', 'Navi Sygic'
+    'Navigiere nach Köln Hauptbahnhof', 'Wie weit noch', 'Navi Motorrad', 'Viele Kurven', 'Kürzeste Route', 'Gemütliche Route durch den Wald', 'Navigation beenden', 'Abbiegung wiederholen', 'Zeige die Karte', 'Hier geparkt', 'Zurück zum Auto', 'Zu Fuß weiter', 'Navigiere nach Hause', 'Speichere diesen Ort als Arbeit', 'Karte zoom rein', 'Kartenfarbe Tag', 'Tankstellen', 'Stau', 'Split mit Navigation', 'Split beenden', 'Gesamtkilometer auf 12345', 'Navi Sygic'
   ];
 
   const api = { parse, num, tileOf, HELP, COLORS, THEMES };

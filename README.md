@@ -10,6 +10,13 @@ Die App hat eine eigene App-ID (`de.menne.navi`) und läuft neben dem Tacho.
 - Tempo, Tempolimit, Höhe und Richtung bleiben auf dem Navi-Bildschirm sichtbar.
 - Werte für eigene Tachos: `navdist`, `navturn`, `navstreet`, `navremain`, `navdur`, `naveta`.
 
+## Orte, Karte, Parkplatz, zu Fuß
+- **Zuhause, Arbeit, Favoriten:** Suchergebnis mit 🏠 💼 ★ speichern oder „Hier ist Zuhause / Arbeit / Favorit“. Sprache: „Navigiere nach Hause“, „Zur Arbeit“, „Speichere diesen Ort als Favorit Bäckerei“.
+- **Parkplatz:** „Hier geparkt“ (oder 🅿) merkt den Standort. „Zurück zum Auto“ führt als Fußweg dorthin.
+- **Zu Fuß weiter:** 🚶 oder „Zu Fuß weiter“ rechnet das Ziel als Fußweg neu. Fußgänger-Profil von Valhalla.
+- **Karte:** Zoom per ＋ ／ －, Zwei-Finger-Zoom oder „Karte zoom rein / raus / automatisch“. Farben: Nacht, Tag, Kontrast, Natur, Grau (🎨 oder „Kartenfarbe Tag“).
+- **Mini-Fenster im Tacho:** Abbiegepfeil, Entfernung, Straße, danach-Hinweis, Rest, Ankunft und Himmelsrichtung. Tippen öffnet das Navi.
+
 ## Motorrad und Streckenwahl
 - Fahrzeug: Auto oder Motorrad (Motorrad-Profil von Valhalla).
 - Kurven (Motorrad): egal, wenig, mittel, viele. Die App rechnet mehrere Varianten und misst die Kurvigkeit selbst.

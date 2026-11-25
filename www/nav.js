@@ -199,6 +199,11 @@
      o.type: 'normal' | 'schnell' | 'kurz' | 'sparsam' | 'lang' | 'gemuetlich'; o.scenic: ['wald','felder','wasser','heide'] */
   async function plan(a, b, o, fetchFn, progress) {
     o = Object.assign({ veh: 'auto', curves: 'egal', type: 'normal', scenic: [] }, o || {});
+    if (o.veh === 'fuss') {
+      if (progress) progress('Fußweg rechnen …');
+      const rs = await valhalla(a, b, fetchFn, { costing: 'pedestrian', opt: {}, alt: 0 });
+      return { rt: rs[0], info: { cands: 1, curv: curviness(rs[0]), walk: true } };
+    }
     const moto = o.veh === 'motorrad', costing = moto ? 'motorcycle' : 'auto';
     const variants = [{ costing, opt: {} }];
     const wantCurvy = o.curves !== 'egal' || o.scenic.length || o.type === 'gemuetlich' || o.type === 'lang';
@@ -300,6 +305,7 @@
       }
       this.state = {
         off: this.off >= 3, along, remain, remainT: remain * rate, step, dNext, kind: step.kind, arrow: ARROW[step.kind] || '⬆',
+        then: (this.rt.steps[ni + 1] && step.kind !== 'arrive') ? { arrow: ARROW[this.rt.steps[ni + 1].kind] || '⬆', d: Math.max(0, this.rt.steps[ni + 1].at - along), kind: this.rt.steps[ni + 1].kind } : null,
         street: step.street, text: step.text, arrived: this.arrived, say, pos: { lat, lon }, dev: best.d
       };
       return this.state;

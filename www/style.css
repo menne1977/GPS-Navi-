@@ -210,3 +210,15 @@ body.cd #mic svg{width:24px;height:24px}
 #nsGo{display:block;width:100%;margin-top:10px;font-size:19px;padding:16px;min-height:56px;border-radius:16px}
 .nsChip{padding:12px 16px;font-size:16px} #nsBot .act{min-height:52px;font-size:16px}
 #nsClose{width:52px;height:52px;font-size:24px}
+/* Navi: Karte mit Zoom, Orte, Mini-Fenster */
+#nsMapW{position:relative;flex:1;min-height:0;margin:10px 0} #nsMapW #nsMap{position:absolute;inset:0;height:100%;width:100%;margin:0}
+#nsZoom{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:8px} #nsZoom button{width:50px;height:50px;border-radius:14px;border:1px solid #ffffff44;background:#0b1626d9;color:#fff;font-size:22px} #nsZoom button.on{background:#2f8bff}
+#navmini{align-items:stretch;gap:10px;padding:10px 14px;min-width:min(92vw,360px)} #navmini b#nmArrow{font-size:46px;align-self:center;min-width:50px;text-align:center}
+#navmini .nmT{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center} #navmini #nmDist{font-size:28px} #navmini #nmThen{font-size:13px;color:#9fd0ff;white-space:nowrap}
+#navmini .nmR{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;text-align:right} #navmini .nmR b{font-size:17px} #navmini .nmR small{font-size:12px;opacity:.75}
+#nsThen{font-size:15px;color:#9fd0ff}
+#nsPlaces{margin-top:16px} .nsPl{display:inline-flex;align-items:stretch;margin:0 8px 8px 0} .nsPb{background:#14233d;border:1px solid #2f8bff66;color:#fff;border-radius:14px 0 0 14px;padding:13px 16px;font-size:16px;font-weight:600} .nsPb.off{border-radius:14px;opacity:.7;font-weight:400} .nsPl .nsX{background:#1b2c4a;border:1px solid #2f8bff44;border-left:0;color:#ff8a80;border-radius:0 14px 14px 0;padding:0 13px;font-size:16px}
+.nsHit{flex-direction:row;align-items:stretch;padding:0;overflow:hidden} .nsHitB{flex:1;text-align:left;background:none;border:0;color:#fff;padding:12px 14px;display:flex;flex-direction:column;gap:3px;min-width:0} .nsHitB small{opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nsSv{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:4px} .nsSv button{background:#1b2c4a;border:0;border-radius:10px;color:#fff;font-size:16px;width:44px;height:34px}
+#navmini{top:calc(max(8px,env(safe-area-inset-top)) + 54px)}
+#nsBot{gap:6px} #nsBot div{min-width:0;flex:1 1 0} #nsBot b{font-size:18px} #nsBot .act{flex:0 0 auto;padding:0 12px;min-height:50px;font-size:15px}
