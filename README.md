@@ -39,3 +39,7 @@ Jeder erstellte oder geladene Tacho wird automatisch in `Dokumente/Tacho-Designs
 - Karte läuft flüssig mit (zwischen den GPS-Punkten weitergerechnet). 🧭 wechselt Fahrtrichtung oben / Norden oben, mit einem Finger lässt sich die Karte verschieben, 🎯 zentriert (nach 15 s automatisch).
 - 💾 speichert die Route samt Straßen entlang der Strecke offline; sie erscheint dann unter „Offline-Routen“ in der Suche und lässt sich ohne Internet fahren (Neuberechnen bei Abweichung braucht Internet).
 - Sprache: „Karte nach Norden“, „Fahrtrichtung oben“, „Karte zentrieren“, „Route offline speichern“, „Offline-Route <Name>“.
+
+## Auto / zu Fuß / Alternativen
+- „Zu Fuß weiter“ merkt das Auto automatisch. 🚗 (oder „Zurück zum Auto“) führt jederzeit zurück, auch mitten in einer Route. Beim Gehen wird das gemerkte Auto nicht überschrieben.
+- 🔀 / „Andere Route“ sucht eine Alternative zum selben Ziel. 📤 / „Ankunft teilen“ teilt Ankunftszeit und Standort.

@@ -284,8 +284,8 @@
     pool.forEach((c) => { c.score = score(c); });
     pool.sort((x, y) => y.score - x.score);
     if (typeof process !== "undefined" && process.env.NAVDBG) console.log(pool.map((c) => [Math.round(c.len), Math.round(c.dur), Math.round(c.curv.degPerKm), c.score.toFixed(2)].join("/")).join("  "));
-    const rt = pool[0];
-    const info = { cands: cands.length, curv: rt.curv, scenic: rt.scenic || null, minDur, extra: minDur ? (rt.dur / minDur - 1) : 0 };
+    const pk = o.pick ? o.pick % pool.length : 0, rt = pool[pk];
+    const info = { pick: pk, pool: pool.length, cands: cands.length, curv: rt.curv, scenic: rt.scenic || null, minDur, extra: minDur ? (rt.dur / minDur - 1) : 0 };
     if (!kinds.length || !rt.scenic) info.noScenic = kinds.length > 0;
     return { rt, info };
   }

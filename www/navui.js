@@ -30,6 +30,7 @@
     } catch (e) { return ''; }
   }
   async function saveHere(kind, label) {
+    if (kind === 'park' && N.route && N.ropts && N.ropts.veh === 'fuss') { const m = 'Du gehst gerade zu Fuß. Das Auto bleibt gemerkt. Mit 🚗 geht es zurück.'; A.toast(m, 4500); return m; }
     const pos = here(); if (!pos) { A.toast('Noch kein Standort.', 3000); return 'Noch kein Standort.'; }
     let name = label || (await nameHere(pos));
     if (kind === 'park') name = 'Parkplatz ' + hhmm() + (name ? ', ' + name : '');
@@ -99,7 +100,7 @@
     scr.innerHTML = `
       <div id="nsTop"><b id="nsArrow">⬆</b><div class="nsT"><div id="nsDist">–</div><div id="nsStreet"></div><div id="nsThen"></div></div><button id="nsClose" aria-label="Zurück zum Tacho">✕</button></div>
       <div id="nsSearch"><div id="nsHead"><button id="nsBack">← Zurück zum Tacho</button></div><input id="nsQ" type="search" placeholder="Ziel eingeben: Straße, Ort, Name" autocomplete="off" autocapitalize="words" enterkeyhint="search"><button id="nsGo" class="act pri">Ziel suchen</button><div id="nsRes"></div><div id="nsOff"></div><div id="nsPlaces"></div><div id="nsOpt"></div></div>
-      <div id="nsMapW"><canvas id="nsMap"></canvas><div id="nsZoom"><button data-z="in" aria-label="Näher">＋</button><button data-z="out" aria-label="Weiter weg">－</button><button data-z="auto" id="nsZa">A</button><button data-z="ori" id="nsOri" aria-label="Kartenausrichtung">🧭</button><button data-z="ctr" id="nsCtr" aria-label="Karte zentrieren">🎯</button><button data-z="off" aria-label="Route offline speichern">💾</button><button data-z="end" id="nsEnd" aria-label="Route beenden">⛔</button><button data-z="col" aria-label="Kartenfarbe">🎨</button><button data-z="walk" aria-label="Zu Fuß weiter">🚶</button><button data-z="park" aria-label="Hier geparkt">🅿</button></div></div>
+      <div id="nsMapW"><canvas id="nsMap"></canvas><div id="nsZoom"><button data-z="in" aria-label="Näher">＋</button><button data-z="out" aria-label="Weiter weg">－</button><button data-z="auto" id="nsZa">A</button><button data-z="ori" id="nsOri" aria-label="Kartenausrichtung">🧭</button><button data-z="ctr" id="nsCtr" aria-label="Karte zentrieren">🎯</button><button data-z="off" aria-label="Route offline speichern">💾</button><button data-z="end" id="nsEnd" aria-label="Route beenden">⛔</button><button data-z="col" aria-label="Kartenfarbe">🎨</button><button data-z="car" aria-label="Zurück zum Auto">🚗</button><button data-z="alt" aria-label="Andere Route">🔀</button><button data-z="share" aria-label="Ankunft teilen">📤</button><button data-z="walk" aria-label="Zu Fuß weiter">🚶</button><button data-z="park" aria-label="Hier geparkt">🅿</button></div></div>
       <div id="nsLive"><div><b id="lvSpeed">0</b><small id="lvUnit">km/h</small></div><div><b id="lvLimit">–</b><small>Limit</small></div><div><b id="lvAlt">–</b><small id="lvAltN">Höhe</small></div><div><b id="lvDir">–</b><small>Richtung</small></div></div>
       <div id="nsBot"><div><b id="nsRem">–</b><small>Rest</small></div><div><b id="nsEta">–</b><small>Ankunft</small></div><div><b id="nsDur">–</b><small>Dauer</small></div><button id="nsTacho" class="act">Tacho</button><button id="nsStop" class="act">Beenden</button></div>`;
     document.body.appendChild(scr);
@@ -134,6 +135,7 @@
       if (z === 'in') zoom(0.55); else if (z === 'out') zoom(1.8); else if (z === 'auto') { N.zoomAuto = true; draw(); }
       else if (z === 'col') { const ks = Object.keys(THEMES); setTheme(ks[(ks.indexOf(A.S.navMap || 'nacht') + 1) % ks.length]); A.toast('Karte: ' + theme().n, 1500); }
       else if (z === 'ori') setOrient(null); else if (z === 'ctr') recenter(); else if (z === 'off') saveOffline(); else if (z === 'end') stop(true);
+      else if (z === 'car') backToCar(); else if (z === 'alt') altRoute(); else if (z === 'share') shareEta();
       else if (z === 'walk') walkOn(); else if (z === 'park') saveHere('park');
     });
     pinch($('nsMap'));
@@ -185,7 +187,7 @@
       const from = A.R.lat != null ? { lat: A.R.lat, lon: A.R.lon, heading: A.heading() } : from0;
       const res = await Nav.plan(from, dest, o, A.fetch, (t) => A.toast(t, 8000));
       const rt = res.rt; N.info = res.info; N.desc = res.info && res.info.walk ? 'ein Fußweg' : Nav.describe(res);
-      N.dest = dest; N.route = rt; N.ropts = o; N.guide = new Nav.Guide(rt); N.st = null; N.lastRe = Date.now(); N.zoomAuto = true;
+      N.altK = 0; N.dest = dest; N.route = rt; N.ropts = o; N.guide = new Nav.Guide(rt); N.st = null; N.lastRe = Date.now(); N.zoomAuto = true;
       N.busy = false; N.pan = { x: 0, y: 0 }; N.offRoads = null; layout(); hide(); A.onRoute && A.onRoute(true);
       const msg = (o.veh === 'fuss' ? 'Fußweg zu ' : 'Route nach ') + String(dest.name || 'Ziel').split(',')[0] + ': ' + meters(rt.len) + ', etwa ' + Nav.fmtTime(rt.dur).replace(' min', ' Minuten').replace(' h', ' Stunden') + '.' + (N.desc && !res.info.walk ? ' Die Strecke ist ' + N.desc + '.' : '') + (res.info && res.info.noScenic ? ' Landschaftsdaten waren nicht erreichbar.' : '');
       A.toast(msg, 8000); speak(msg + ' ' + (rt.steps[0] ? rt.steps[0].say : ''));
@@ -213,6 +215,7 @@
   // Zu Fuß weiter: gleiches Ziel, jetzt als Fußweg
   async function walkOn() {
     if (!N.dest) { setOpt({ veh: 'fuss' }); const m = 'Zu Fuß eingestellt. Wähle ein Ziel.'; A.toast(m, 3000); return m; }
+    if (!(N.ropts && N.ropts.veh === 'fuss')) { const pos = here(); if (pos) { const nm = await nameHere(pos); setPlace('park', { name: 'Auto ' + hhmm() + (nm ? ', ' + nm : ''), lat: pos.lat, lon: pos.lon, t: Date.now() }); A.toast('Auto hier gemerkt. Zurück per 🚗.', 4000); } }
     N.ropts = Object.assign({}, N.ropts || opts(), { veh: 'fuss' }); N.lastRe = 0; N.busy = false;
     A.toast('Fußweg wird berechnet …', 5000);
     try {
@@ -220,6 +223,34 @@
       N.route = res.rt; N.guide = new Nav.Guide(res.rt); N.st = null; N.zoomAuto = true;
       const m = 'Zu Fuß weiter, noch ' + meters(res.rt.len) + '.'; speak(m); A.toast(m, 4000); tick(); return m;
     } catch (e) { const m = (e && e.message) || String(e); A.toast(m, 5000); return m; }
+  }
+
+  // Zurück zum Auto: jederzeit, auch mitten in einer anderen Route
+  async function backToCar() {
+    const p = P().park; if (!p) { const m = 'Kein Auto gemerkt. Sage „Hier geparkt“ oder tippe auf 🅿.'; A.toast(m, 4500); return m; }
+    if (N.busy) return 'Ich rechne schon.';
+    N.route = null; N.guide = null; N.st = null; layout();
+    return start(p, { veh: 'fuss' });
+  }
+  // Andere Route zum selben Ziel (Alternative)
+  async function altRoute() {
+    if (!N.dest || !N.route) { const m = 'Erst eine Route starten.'; A.toast(m, 3000); return m; }
+    if (N.busy) return 'Ich rechne schon.'; N.busy = true; A.toast('Alternative wird gesucht …', 6000);
+    try {
+      const k = (N.altK || 0) + 1, o = Object.assign({}, N.ropts || opts(), { pick: k });
+      const res = await Nav.plan({ lat: A.R.lat, lon: A.R.lon, heading: A.heading() }, N.dest, o, A.fetch);
+      if (!(res.info && res.info.pool > 1)) { N.busy = false; const m = 'Es gibt keine andere sinnvolle Route.'; A.toast(m, 3500); speak(m); return m; }
+      N.altK = k; N.route = res.rt; N.guide = new Nav.Guide(res.rt); N.st = null; N.lastRe = Date.now();
+      const m = 'Route ' + ((res.info.pick || 0) + 1) + ' von ' + res.info.pool + ': ' + meters(res.rt.len) + ', etwa ' + Nav.fmtTime(res.rt.dur).replace(' min', ' Minuten').replace(' h', ' Stunden') + '.';
+      N.busy = false; A.toast(m, 5000); speak(m + ' ' + (res.rt.steps[0] ? res.rt.steps[0].say : '')); tick(); return m;
+    } catch (e) { N.busy = false; const m = (e && e.message) || String(e); A.toast(m, 5000); return m; }
+  }
+  // Ankunftszeit und Standort teilen
+  async function shareEta() {
+    if (!N.st || !N.dest) { const m = 'Keine Navigation aktiv.'; A.toast(m, 3000); return m; }
+    const text = 'Ich bin unterwegs nach ' + String(N.dest.name || 'Ziel').split(',')[0] + ', Ankunft etwa ' + eta(N.st.remainT) + ' Uhr (noch ' + Nav.fmtDist(N.st.remain) + '). Standort: https://maps.google.com/?q=' + A.R.lat.toFixed(5) + ',' + A.R.lon.toFixed(5);
+    try { if (navigator.share) { await navigator.share({ text }); return 'Geteilt.'; } } catch (e) { return 'Abgebrochen.'; }
+    try { await navigator.clipboard.writeText(text); A.toast('Text kopiert. Jetzt in einer Nachricht einfügen.', 5000); return 'Text kopiert.'; } catch (e) { A.toast(text, 9000); return text; }
   }
 
   async function reroute() {
@@ -236,7 +267,7 @@
     if (!N.guide || A.R.lat == null) return;
     const s = N.guide.update(A.R.lat, A.R.lon, A.R.acc); N.st = s; if (!s) return;
     if (s.say.length) speak(s.say.join('. '));
-    if (s.arrived) { speak('Sie haben Ihr Ziel erreicht.'); A.toast('Ziel erreicht.', 5000); stop(false); return; }
+    if (s.arrived) { const walked = N.ropts && N.ropts.veh === 'fuss', hasCar = !!P().park; speak('Sie haben Ihr Ziel erreicht.' + (walked && hasCar ? ' Für den Rückweg sagen Sie: Zurück zum Auto.' : '')); A.toast(walked && hasCar ? 'Ziel erreicht. Zurück zum Auto: 🚗 tippen.' : 'Ziel erreicht.', 6000); stop(false); return; }
     if (s.off) reroute();
     const then = s.then ? 'danach ' + s.then.arrow + ' in ' + Nav.fmtDist(s.then.d) : '';
     const lv = A.live ? A.live() : null;
@@ -383,5 +414,5 @@
   }
 
   function init(api) { A = api; build(); layout(); }
-  root.NavUI = { setOrient, recenter, saveOffline, startOffline, setAvoid: (id, on) => { const o = opts(); const l = on ? (o.avoid.includes(id) ? o.avoid : o.avoid.concat(id)) : o.avoid.filter((x) => x !== id); setOpt({ avoid: l }); return l; }, zoomIn: () => zoom(0.55), zoomOut: () => zoom(1.8), zoomAuto: () => { N.zoomAuto = true; draw(); }, setOpt, opts, setTheme, init, show, hide, go, start, stop, onFix, repeat, info, vals, search, saveHere, walkOn, resolve, places: P, active: () => !!N.route, isOpen: () => N.open };
+  root.NavUI = { backToCar, altRoute, shareEta, setOrient, recenter, saveOffline, startOffline, setAvoid: (id, on) => { const o = opts(); const l = on ? (o.avoid.includes(id) ? o.avoid : o.avoid.concat(id)) : o.avoid.filter((x) => x !== id); setOpt({ avoid: l }); return l; }, zoomIn: () => zoom(0.55), zoomOut: () => zoom(1.8), zoomAuto: () => { N.zoomAuto = true; draw(); }, setOpt, opts, setTheme, init, show, hide, go, start, stop, onFix, repeat, info, vals, search, saveHere, walkOn, resolve, places: P, active: () => !!N.route, isOpen: () => N.open };
 })(window);

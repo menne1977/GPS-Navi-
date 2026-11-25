@@ -94,6 +94,8 @@
     if (/^(hier (ist|wohne ich|bin ich) zuhause|hier wohne ich|hier ist zu hause)$/.test(s)) return { act: 'navsave', kind: 'home' };
     if (/^(hier arbeite ich|hier ist (die )?arbeit)$/.test(s)) return { act: 'navsave', kind: 'work' };
     if ((m = s.match(/^(?:karten ?farbe|karte)\s+(nacht|tag|kontrast|natur|grau)$/))) return { act: 'navtheme', id: m[1] };
+    if (/^(andere route|alternative route|alternative|route ändern|andere strecke|nächste route)$/.test(s)) return { act: 'navalt', say: 'Ich suche eine andere Route.' };
+    if (/^(ankunft teilen|eta teilen|standort teilen|route teilen|meine ankunft teilen)$/.test(s)) return { act: 'navshare', say: 'Ich teile die Ankunft.' };
     if (/^(?:karte\s+)?(nach norden|norden oben|nordausrichtung|nord oben|karte norden)$/.test(s)) return { act: 'naviorient', v: 'north', say: 'Norden oben.' };
     if (/^(?:karte\s+)?(fahrtrichtung oben|nach fahrtrichtung|karte drehen|karte mitdrehen|richtung oben)$/.test(s)) return { act: 'naviorient', v: 'heading', say: 'Fahrtrichtung oben.' };
     if (/^(karte zentrieren|karte mittig|zentrieren|karte zurück|mich zeigen|karte auf mich)$/.test(s)) return { act: 'naviorient', v: 'center', say: 'Karte zentriert.' };
