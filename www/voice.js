@@ -100,6 +100,11 @@
     if ((m = s.match(/\b(schnellste|kürzeste|sparsamste|sparsame|längste|gemütliche|ausgewogene|normale)\s+(route|strecke)\b/))) { const k = { schnellste: 'schnell', kürzeste: 'kurz', sparsamste: 'sparsam', sparsame: 'sparsam', längste: 'lang', gemütliche: 'gemuetlich', ausgewogene: 'normal', normale: 'normal' }[m[1]]; return { act: 'navopt', p: { type: k }, say: m[1].charAt(0).toUpperCase() + m[1].slice(1) + ' Route.' }; }
     if ((m = s.match(/\bdurch\s+(den\s+|die\s+|das\s+)?(wald|wälder|felder|feld|wiesen|wasser|seen|heide)\b/))) { const k = { wald: 'wald', wälder: 'wald', felder: 'felder', feld: 'felder', wiesen: 'felder', wasser: 'wasser', seen: 'wasser', heide: 'heide' }[m[2]]; return { act: 'navopt', add: k, say: 'Landschaft: ' + m[2] + '.' }; }
     if (/(landschaft (aus|egal)|ohne landschaft)/.test(s)) return { act: 'navopt', p: { scenic: [] }, say: 'Landschaft egal.' };
+    if (/(alles erlauben|nichts vermeiden|vermeiden aus|alle straßen erlauben)/.test(s)) return { act: 'navavoid', id: 'all', on: false, say: 'Alles erlaubt.' };
+    if ((m = s.match(/(autobahn|autobahnen|maut|mautstraßen|mautstrassen|fähre|fähren|innenstadt|stadtzentrum|stadtmitte|zentrum)\s*(vermeiden|meiden|umfahren|erlauben|zulassen)|(ohne|keine|nicht durch(?: die)?)\s+(autobahn|autobahnen|maut|mautstraßen|mautstrassen|fähre|fähren|innenstadt|stadt|stadtzentrum)/))) {
+      const w = m[1] || m[4], id = /autobahn/.test(w) ? 'autobahn' : /maut/.test(w) ? 'maut' : /fähr/.test(w) ? 'faehre' : 'stadt'; const on = !(m[2] && /erlauben|zulassen/.test(m[2]));
+      return { act: 'navavoid', id, on, say: { autobahn: 'Autobahn', maut: 'Mautstraßen', faehre: 'Fähren', stadt: 'Innenstadt' }[id] + (on ? ' wird vermieden.' : ' ist erlaubt.') };
+    }
     if (/^(beende|beenden|stoppe|stopp|breche|brich|schalte)\s+(die |das )?(navigation|navi|route|zielführung)( ab| aus)?$|^navigation (beenden|stoppen|aus)$/.test(s)) return { act: 'navstop' };
     if (/wie weit (ist es )?noch|wie lange noch|wann (bin|sind) (ich|wir) da|ankunftszeit|restweg/.test(s)) return { act: 'navinfo' };
     if (/(wiederhole|noch ?mal|noch einmal|sag).*(ansage|abbiegung|abbiegen|anweisung)|^nächste abbiegung$|^was jetzt$/.test(s)) return { act: 'navrepeat' };
@@ -234,7 +239,7 @@
     'Tageskilometer zurücksetzen', 'Höchstgeschwindigkeit zurücksetzen', 'Aktivierungswort ändern auf Cockpit',
     'Sprachantworten aus', 'Lautstärke 60', 'Online aus', 'Einstellungen',
     'Öffne Spotify', 'Schließe YouTube', 'Zurück', 'Startbildschirm', 'Scrolle nach unten', 'Tippe auf Suche', 'Schreibe Hallo', 'Musik Pause', 'Nächster Titel', 'Lauter',
-    'Navigiere nach Köln Hauptbahnhof', 'Wie weit noch', 'Navi Motorrad', 'Viele Kurven', 'Kürzeste Route', 'Gemütliche Route durch den Wald', 'Navigation beenden', 'Abbiegung wiederholen', 'Zeige die Karte', 'Hier geparkt', 'Zurück zum Auto', 'Zu Fuß weiter', 'Navigiere nach Hause', 'Speichere diesen Ort als Arbeit', 'Karte zoom rein', 'Kartenfarbe Tag', 'Tankstellen', 'Stau', 'Split mit Navigation', 'Split beenden', 'Gesamtkilometer auf 12345', 'Navi Sygic'
+    'Navigiere nach Köln Hauptbahnhof', 'Wie weit noch', 'Navi Motorrad', 'Viele Kurven', 'Kürzeste Route', 'Gemütliche Route durch den Wald', 'Navigation beenden', 'Abbiegung wiederholen', 'Zeige die Karte', 'Autobahn vermeiden', 'Ohne Maut', 'Keine Fähren', 'Innenstadt umfahren', 'Alles erlauben', 'Hier geparkt', 'Zurück zum Auto', 'Zu Fuß weiter', 'Navigiere nach Hause', 'Speichere diesen Ort als Arbeit', 'Karte zoom rein', 'Kartenfarbe Tag', 'Tankstellen', 'Stau', 'Split mit Navigation', 'Split beenden', 'Gesamtkilometer auf 12345', 'Navi Sygic'
   ];
 
   const api = { parse, num, tileOf, HELP, COLORS, THEMES };

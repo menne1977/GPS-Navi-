@@ -64,15 +64,16 @@
     veh: [['auto', 'Auto'], ['motorrad', 'Motorrad'], ['fuss', 'Zu Fuß']],
     curves: [['egal', 'Kurven egal'], ['wenig', 'Wenig Kurven'], ['mittel', 'Mittlere Kurven'], ['viele', 'Viele Kurven']],
     type: [['normal', 'Ausgewogen'], ['schnell', 'Schnellste'], ['kurz', 'Kürzeste'], ['sparsam', 'Sparsam'], ['lang', 'Längste'], ['gemuetlich', 'Gemütlich']],
-    scenic: [['wald', 'Wald'], ['felder', 'Felder und Wiesen'], ['wasser', 'Wasser'], ['heide', 'Heide']]
+    scenic: [['wald', 'Wald'], ['felder', 'Felder und Wiesen'], ['wasser', 'Wasser'], ['heide', 'Heide']],
+    avoid: [['autobahn', 'Autobahn'], ['maut', 'Mautstraßen'], ['faehre', 'Fähren'], ['stadt', 'Innenstadt umfahren']]
   };
-  const LBL = { veh: 'Fahrzeug', curves: 'Kurven (Motorrad)', type: 'Streckenart', scenic: 'Landschaft, bei mir mit Aussicht' };
-  const opts = () => Object.assign({ veh: 'auto', curves: 'egal', type: 'normal', scenic: [] }, A.S.navOpt || {});
+  const LBL = { veh: 'Fahrzeug', curves: 'Kurven (Motorrad)', type: 'Streckenart', scenic: 'Landschaft, bei mir mit Aussicht', avoid: 'Vermeiden' };
+  const opts = () => Object.assign({ veh: 'auto', curves: 'egal', type: 'normal', scenic: [], avoid: [] }, A.S.navOpt || {});
   function setOpt(patch) { A.S.navOpt = Object.assign(opts(), patch); renderOpts(); persist(); }
   function renderOpts() {
     const o = opts(), el = $('nsOpt'); if (!el) return;
     const groups = Object.keys(OPT).filter((k) => o.veh === 'fuss' ? k === 'veh' : !(k === 'curves' && o.veh !== 'motorrad')).map((k) => `<div class="nsG"><small>${LBL[k]}</small><div class="nsC">${OPT[k].map(([v, t]) => {
-      const on = k === 'scenic' ? o.scenic.includes(v) : o[k] === v; return `<button class="nsChip${on ? ' on' : ''}" data-k="${k}" data-v="${v}">${t}</button>`; }).join('')}</div></div>`);
+      const on = (k === 'scenic' || k === 'avoid') ? (o[k] || []).includes(v) : o[k] === v; return `<button class="nsChip${on ? ' on' : ''}" data-k="${k}" data-v="${v}">${t}</button>`; }).join('')}</div></div>`);
     groups.push(`<div class="nsG"><small>Kartenfarbe</small><div class="nsC">${Object.keys(THEMES).map((k) => `<button class="nsChip${(A.S.navMap || 'nacht') === k ? ' on' : ''}" data-theme="${k}">${THEMES[k].n}</button>`).join('')}</div></div>`);
     el.innerHTML = groups.join('');
   }
@@ -120,7 +121,7 @@
     $('nsOpt').addEventListener('click', (e) => {
       const t = e.target.closest('button[data-theme]'); if (t) { setTheme(t.dataset.theme); return; }
       const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k, v = b.dataset.v, o = opts();
-      if (k === 'scenic') setOpt({ scenic: o.scenic.includes(v) ? o.scenic.filter((x) => x !== v) : o.scenic.concat(v) }); else setOpt({ [k]: v });
+      if (k === 'scenic' || k === 'avoid') setOpt({ [k]: o[k].includes(v) ? o[k].filter((x) => x !== v) : o[k].concat(v) }); else setOpt({ [k]: v });
     });
     $('nsZoom').addEventListener('click', (e) => {
       const b = e.target.closest('[data-z]'); if (!b) return; const z = b.dataset.z;
@@ -302,5 +303,5 @@
   }
 
   function init(api) { A = api; build(); layout(); }
-  root.NavUI = { zoomIn: () => zoom(0.55), zoomOut: () => zoom(1.8), zoomAuto: () => { N.zoomAuto = true; draw(); }, setOpt, opts, setTheme, init, show, hide, go, start, stop, onFix, repeat, info, vals, search, saveHere, walkOn, resolve, places: P, active: () => !!N.route, isOpen: () => N.open };
+  root.NavUI = { setAvoid: (id, on) => { const o = opts(); const l = on ? (o.avoid.includes(id) ? o.avoid : o.avoid.concat(id)) : o.avoid.filter((x) => x !== id); setOpt({ avoid: l }); return l; }, zoomIn: () => zoom(0.55), zoomOut: () => zoom(1.8), zoomAuto: () => { N.zoomAuto = true; draw(); }, setOpt, opts, setTheme, init, show, hide, go, start, stop, onFix, repeat, info, vals, search, saveHere, walkOn, resolve, places: P, active: () => !!N.route, isOpen: () => N.open };
 })(window);

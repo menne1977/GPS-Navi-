@@ -26,3 +26,7 @@ Die App hat eine eigene App-ID (`de.menne.navi`) und läuft neben dem Tacho.
 
 ## Bauen
 GitHub Actions baut bei jedem Push die Debug-APK (Artefakt `navi-debug-apk`). Symbol: `node`-frei, `python3 tools/make-icon.py`.
+
+## Vermeiden
+In den Navi-Optionen unter „Vermeiden“: Autobahn, Mautstraßen, Fähren und „Innenstadt umfahren“ (Städte entlang der Route werden als Sperrfläche umfahren). Lässt sich etwas nicht vermeiden, sagt das Navi es an.
+Sprache: „Autobahn vermeiden“, „Ohne Maut“, „Keine Fähren“, „Innenstadt umfahren“, „Alles erlauben“.

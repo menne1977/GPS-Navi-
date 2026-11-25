@@ -81,7 +81,9 @@
         street: clean((m.street_names || [])[0]), len: (m.length || 0) * 1000, t: m.time || 0
       }));
     });
-    return finish(shape, steps, t.summary.length * 1000, t.summary.time);
+    const rt = finish(shape, steps, t.summary.length * 1000, t.summary.time);
+    rt.flags = { toll: !!t.summary.has_toll, ferry: !!t.summary.has_ferry, highway: !!t.summary.has_highway };
+    return rt;
   }
   // co: Profilwahl und Optionen, alt: Anzahl Alternativen. Liefert alle Routen (Haupt- und Alternativrouten).
   async function valhalla(a, b, fetchFn, co) {
@@ -90,6 +92,7 @@
     const req = { locations: [{ lat: a.lat, lon: a.lon, type: 'break' }, { lat: b.lat, lon: b.lon, type: 'break' }], costing, directions_options: { language: 'de-DE', units: 'kilometers' } };
     if (co.opt) { req.costing_options = {}; req.costing_options[costing] = co.opt; }
     if (co.alt) req.alternates = co.alt;
+    if (co.polys && co.polys.length) req.exclude_polygons = co.polys;
     if (a.heading != null) req.locations[0].heading = Math.round(a.heading);
     const r = await fetchFn('https://valhalla1.openstreetmap.de/route?json=' + encodeURIComponent(JSON.stringify(req)), {});
     if (!r.ok) throw new Error('Valhalla HTTP ' + r.status);
@@ -194,11 +197,38 @@
     return { frac: hit / samples.length, per };
   }
 
+  // Innenstädte entlang der Route finden und als Sperrflächen (Vielecke) liefern
+  async function cityPolys(rt, a, b, fetchFn) {
+    const step = 3000, samples = []; let next = 0;
+    for (let i = 0; i < rt.shape.length; i++) if (rt.cum[i] >= next) { samples.push(rt.shape[i]); next += step; }
+    if (samples.length < 2) return { polys: [], names: [] };
+    const pts = samples.slice(0, 70).map((p) => p.lat.toFixed(4) + ',' + p.lon.toFixed(4)).join(',');
+    const j = await overpass(`[out:json][timeout:25];node(around:3500,${pts})["place"~"^(city|town)$"];out tags center 120;`, fetchFn);
+    const found = [];
+    (j.elements || []).forEach((e) => {
+      if (e.lat == null) return; const t = e.tags || {}, pop = +(t.population || 0);
+      const r = pop >= 200000 ? 3000 : pop >= 100000 ? 2500 : pop >= 50000 ? 2000 : pop >= 20000 ? 1500 : (t.place === 'city' ? 2200 : 1100);
+      let dmin = 1e12; for (let i = 0; i < rt.shape.length; i += 2) { const d = hav(e.lat, e.lon, rt.shape[i].lat, rt.shape[i].lon); if (d < dmin) dmin = d; }
+      if (dmin < r + 500 && hav(a.lat, a.lon, e.lat, e.lon) > r + 2500 && hav(b.lat, b.lon, e.lat, e.lon) > r + 2500) found.push({ name: t.name || 'Innenstadt', lat: e.lat, lon: e.lon, r, pop });
+    });
+    found.sort((x, y) => y.r - x.r);
+    const top = found.slice(0, 6);
+    const polys = top.map((c) => { const ring = []; for (let k = 0; k < 16; k++) { const an = k / 16 * 2 * Math.PI; ring.push([+(c.lon + Math.cos(an) * c.r / (111320 * Math.cos(c.lat * RAD))).toFixed(5), +(c.lat + Math.sin(an) * c.r / 111320).toFixed(5)]); } ring.push(ring[0]); return ring; });
+    return { polys, names: top.map((c) => c.name) };
+  }
+
   /* Routenplaner mit Wahl.
      o.veh: 'auto' | 'motorrad'; o.curves: 'egal' | 'wenig' | 'mittel' | 'viele';
      o.type: 'normal' | 'schnell' | 'kurz' | 'sparsam' | 'lang' | 'gemuetlich'; o.scenic: ['wald','felder','wasser','heide'] */
-  async function plan(a, b, o, fetchFn, progress) {
-    o = Object.assign({ veh: 'auto', curves: 'egal', type: 'normal', scenic: [] }, o || {});
+  function mergeAvoid(opt, ex) {
+    const o2 = Object.assign({}, opt), A = ex && ex.avoid; if (!A) return o2;
+    if (A.highway) { o2.use_highways = 0; if (ex.strict) o2.exclude_highways = true; }
+    if (A.toll) { o2.use_tolls = 0; if (ex.strict) o2.exclude_tolls = true; }
+    if (A.ferry) { o2.use_ferry = 0; if (ex.strict) o2.exclude_ferries = true; }
+    return o2;
+  }
+  async function planCore(a, b, o, fetchFn, progress, ex) {
+    ex = ex || {};
     if (o.veh === 'fuss') {
       if (progress) progress('Fußweg rechnen …');
       const rs = await valhalla(a, b, fetchFn, { costing: 'pedestrian', opt: {}, alt: 0 });
@@ -216,7 +246,8 @@
     if (progress) progress('Varianten rechnen …');
     const all = [];
     let err = null;
-    await Promise.all(variants.map((v) => valhalla(a, b, fetchFn, { costing: v.costing, opt: v.opt, alt }).then((rs) => rs.forEach((r) => all.push(r))).catch((e) => { err = e; })));
+    await Promise.all(variants.map((v) => valhalla(a, b, fetchFn, { costing: v.costing, opt: mergeAvoid(v.opt, ex), alt, polys: ex.polys }).then((rs) => rs.forEach((r) => all.push(r))).catch((e) => { err = e; })));
+    if (!all.length && (ex.strict || (ex.polys && ex.polys.length))) throw (err || new Error('Keine Route'));
     if (!all.length) { const base = await route(a, b, fetchFn); return { rt: base, info: { note: 'Nur Standardroute möglich', cands: 1 } }; }
     // doppelte Routen entfernen (gleiche Länge, gleiche Mitte)
     const cands = [];
@@ -259,11 +290,43 @@
     return { rt, info };
   }
 
+  async function plan(a, b, o, fetchFn, progress) {
+    o = Object.assign({ veh: 'auto', curves: 'egal', type: 'normal', scenic: [], avoid: [] }, o || {});
+    const av = o.avoid || [];
+    if (o.veh === 'fuss' || !av.length) return planCore(a, b, o, fetchFn, progress, {});
+    const avoid = { highway: av.includes('autobahn'), toll: av.includes('maut'), ferry: av.includes('faehre'), city: av.includes('stadt') };
+    let polys = [], names = [], notes = [];
+    if (avoid.city) {
+      if (progress) progress('Innenstädte suchen …');
+      try {
+        const first = await planCore(a, b, Object.assign({}, o, { curves: 'egal', scenic: [], type: 'schnell' }), fetchFn, null, { avoid, strict: true });
+        const cp = await cityPolys(first.rt, a, b, fetchFn); polys = cp.polys; names = cp.names;
+      } catch (e) { notes.push('Innenstädte konnte ich nicht prüfen'); }
+    }
+    let res, soft = false;
+    try { res = await planCore(a, b, o, fetchFn, progress, { avoid, polys, strict: true }); }
+    catch (e1) {
+      try { res = await planCore(a, b, o, fetchFn, progress, { avoid, polys, strict: false }); soft = true; }
+      catch (e2) {
+        if (polys.length) { polys = []; names = []; notes.push('Innenstadt ließ sich nicht umfahren'); }
+        res = await planCore(a, b, o, fetchFn, progress, { avoid, polys: [], strict: false }); soft = true;
+      }
+    }
+    const f = res.rt.flags || {}, say = [];
+    if (names.length && polys.length) say.push('Innenstadt umfahren: ' + names.slice(0, 3).join(', '));
+    if (avoid.highway) say.push(f.highway ? 'Autobahn war nicht ganz vermeidbar' : 'ohne Autobahn');
+    if (avoid.toll) say.push(f.toll ? 'Maut war nicht ganz vermeidbar' : 'ohne Maut');
+    if (avoid.ferry) say.push(f.ferry ? 'eine Fähre ließ sich nicht vermeiden' : 'ohne Fähre');
+    res.info = Object.assign(res.info || {}, { avoidSay: say.concat(notes), soft });
+    return res;
+  }
+
   const curveWord = (c) => (c.degPerKm < 25 ? 'gerade' : c.degPerKm < 60 ? 'leicht kurvig' : c.degPerKm < 110 ? 'kurvig' : 'sehr kurvig');
   function describe(res) {
-    const i = res.info; if (!i || !i.curv) return '';
-    let t = curveWord(i.curv);
+    const i = res.info; if (!i) return '';
+    let t = i.curv ? curveWord(i.curv) : '';
     if (i.scenic) { const parts = Object.keys(i.scenic.per).filter((k) => i.scenic.per[k] > 0.05).map((k) => Math.round(i.scenic.per[k] * 100) + ' % ' + LAND[k].label); if (parts.length) t += ', ' + parts.join(', '); }
+    if (i.avoidSay && i.avoidSay.length) t += (t ? ', ' : '') + i.avoidSay.join(', ');
     return t;
   }
 
