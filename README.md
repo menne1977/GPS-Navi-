@@ -43,3 +43,11 @@ Jeder erstellte oder geladene Tacho wird automatisch in `Dokumente/Tacho-Designs
 ## Auto / zu Fuß / Alternativen
 - „Zu Fuß weiter“ merkt das Auto automatisch. 🚗 (oder „Zurück zum Auto“) führt jederzeit zurück, auch mitten in einer Route. Beim Gehen wird das gemerkte Auto nicht überschrieben.
 - 🔀 / „Andere Route“ sucht eine Alternative zum selben Ziel. 📤 / „Ankunft teilen“ teilt Ankunftszeit und Standort.
+
+### Navi-Anzeige im Tacho
+- Einstellungen → Tacho-Designs → „Navi im Tacho“: Leiste oben, Leiste unten, schwebendes Fenster, nur im eigenen Design oder aus.
+- Im Creator gibt es das Element „Navi-Anzeige“ (Aufbau quer/hoch/nur Pfeil, Pfeil-Stil, Farbe, Kasten). Steckt es im Design, erscheint das Navi genau dort.
+- Navi → ⚙ Einstellungen (einklappbar): Pfeil-Stil (Klassisch, Schlank, Umriss, Zeichen), Pfeil-Farbe, Schrift und Pfeil (Normal/Groß/Sehr groß), Hintergrund, „danach“ an/aus.
+- Kreisverkehr als Grafik mit Ausfahrt-Nummer und Richtung.
+- Erste Ansage vor dem Abbiegen: 250 m, 500 m, 750 m, 1 km oder nach Tempo; danach 200 m und beim Abbiegen.
+- Sprache: „Ansage bei 1 Kilometer“, „Navi Leiste unten“, „Pfeile groß“.
