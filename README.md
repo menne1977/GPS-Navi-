@@ -36,7 +36,7 @@ Jeder erstellte oder geladene Tacho wird automatisch in `Dokumente/Tacho-Designs
 
 ## Karte, Beenden, Offline
 - Beenden: roter Knopf „Beenden“ unten, ⛔ an der Karte, „✕ Ende“ im Mini-Fenster im Tacho, oder „Navigation beenden“ per Sprache.
-- Karte läuft flüssig mit (zwischen den GPS-Punkten weitergerechnet). 🧭 wechselt Fahrtrichtung oben / Norden oben, mit einem Finger lässt sich die Karte verschieben, 🎯 zentriert (nach 15 s automatisch).
+- Karte läuft flüssig mit (zwischen den GPS-Punkten weitergerechnet). 🧭 wechselt Fahrtrichtung oben / Norden oben, mit einem Finger lässt sich die Karte verschieben, 🎯 zentriert (nach 15 s automatisch). Mit dem Pfeil-Knopf (⬆ ➡ ⬇ ⬅) auf der Karte wählst du, in welche Richtung du auf dem Bildschirm fährst. Unten rechts (⋮⋮) öffnet das Menü im Stil großer Navis.
 - 💾 speichert die Route samt Straßen entlang der Strecke offline; sie erscheint dann unter „Offline-Routen“ in der Suche und lässt sich ohne Internet fahren (Neuberechnen bei Abweichung braucht Internet).
 - Sprache: „Karte nach Norden“, „Fahrtrichtung oben“, „Karte zentrieren“, „Route offline speichern“, „Offline-Route <Name>“.
 
