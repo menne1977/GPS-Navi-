@@ -109,6 +109,35 @@ public class FilesPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void saveGpx(PluginCall call) {
+        String name = call.getString("name"), text = call.getString("text");
+        if (name == null || text == null) { call.reject("Name oder Text fehlt"); return; }
+        String file = safe(name) + ".gpx";
+        try {
+            byte[] data = text.getBytes(StandardCharsets.UTF_8);
+            String where;
+            if (Build.VERSION.SDK_INT >= 29) {
+                ContentResolver cr = getContext().getContentResolver();
+                ContentValues v = new ContentValues();
+                v.put(MediaStore.MediaColumns.DISPLAY_NAME, file);
+                v.put(MediaStore.MediaColumns.MIME_TYPE, "application/gpx+xml");
+                v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS + "/Tacho-Strecken/");
+                Uri u = cr.insert(MediaStore.Files.getContentUri("external"), v);
+                if (u == null) throw new Exception("Ordner nicht beschreibbar");
+                try (OutputStream o = cr.openOutputStream(u, "wt")) { o.write(data); }
+                where = "Dokumente/Tacho-Strecken/" + file;
+            } else {
+                File d = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "Tacho-Strecken");
+                d.mkdirs();
+                File f = new File(d, file);
+                try (FileOutputStream o = new FileOutputStream(f)) { o.write(data); }
+                where = f.getAbsolutePath();
+            }
+            JSObject r = new JSObject(); r.put("path", where); call.resolve(r);
+        } catch (Exception e) { call.reject("GPX speichern fehlgeschlagen: " + e.getMessage()); }
+    }
+
+    @PluginMethod
     public void list(PluginCall call) {
         JSArray out = new JSArray();
         try {

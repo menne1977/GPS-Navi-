@@ -245,6 +245,7 @@
     if (A.highway) { o2.use_highways = 0; if (ex.strict) o2.exclude_highways = true; }
     if (A.toll) { o2.use_tolls = 0; if (ex.strict) o2.exclude_tolls = true; }
     if (A.ferry) { o2.use_ferry = 0; if (ex.strict) o2.exclude_ferries = true; }
+    if (A.unpaved) { o2.exclude_unpaved = true; if (o2.use_trails != null) o2.use_trails = 0; }
     return o2;
   }
   async function planCore(a, b, o, fetchFn, progress, ex) {
@@ -315,7 +316,7 @@
     o = Object.assign({ veh: 'auto', curves: 'egal', type: 'normal', scenic: [], avoid: [] }, o || {});
     const av = o.avoid || [], xp = o.polys || [];
     if (o.veh === 'fuss' || !av.length) return planCore(a, b, o, fetchFn, progress, xp.length && o.veh !== 'fuss' ? { polys: xp } : {});
-    const avoid = { highway: av.includes('autobahn'), toll: av.includes('maut'), ferry: av.includes('faehre'), city: av.includes('stadt') };
+    const avoid = { highway: av.includes('autobahn'), toll: av.includes('maut'), ferry: av.includes('faehre'), city: av.includes('stadt'), unpaved: av.includes('schotter') };
     let polys = [], names = [], notes = [];
     if (avoid.city) {
       if (progress) progress('Innenstädte suchen …');

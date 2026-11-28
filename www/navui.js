@@ -57,9 +57,10 @@
     tag: { n: 'Tag', bg: '#eef2f6', road: '#b6c0cd', route: '#1a6bff', core: '#8fb8ff', done: '#a0aab8', car: '#0a9d5a', pin: '#e02b20' },
     kontrast: { n: 'Kontrast', bg: '#000000', road: '#707070', route: '#ffd400', core: '#fff3a0', done: '#555555', car: '#00ff88', pin: '#ff4d4d' },
     natur: { n: 'Natur', bg: '#0d1f14', road: '#3f5f48', route: '#ffb703', core: '#ffe29a', done: '#4c6a52', car: '#9cff4d', pin: '#ff6b5a' },
+    auto: { n: 'Automatisch (Tag/Nacht)' },
     grau: { n: 'Grau', bg: '#1c1c1c', road: '#4d4d4d', route: '#e6e6e6', core: '#ffffff', done: '#6e6e6e', car: '#16d17a', pin: '#ff5a4d' }
   };
-  const theme = () => THEMES[A.S.navMap] || THEMES.nacht;
+  const theme = () => { if (A.S.navMap === 'auto') { const h = new Date().getHours(); return h >= 19 || h < 7 ? THEMES.nacht : THEMES.tag; } return THEMES[A.S.navMap] || THEMES.nacht; };
   function setTheme(k) { if (THEMES[k]) { A.S.navMap = k; persist(); renderOpts(); draw(); } }
 
   // ---------- Anzeige: Pfeil-Stil, Farbe, Größe, Hintergrund, Ansage, Platz im Tacho ----------
@@ -109,7 +110,7 @@
     curves: [['egal', 'Kurven egal'], ['wenig', 'Wenig Kurven'], ['mittel', 'Mittlere Kurven'], ['viele', 'Viele Kurven']],
     type: [['normal', 'Ausgewogen'], ['schnell', 'Schnellste'], ['kurz', 'Kürzeste'], ['sparsam', 'Sparsam'], ['lang', 'Längste'], ['gemuetlich', 'Gemütlich']],
     scenic: [['wald', 'Wald'], ['felder', 'Felder und Wiesen'], ['wasser', 'Wasser'], ['heide', 'Heide']],
-    avoid: [['autobahn', 'Autobahn'], ['maut', 'Mautstraßen'], ['faehre', 'Fähren'], ['stadt', 'Innenstadt umfahren']]
+    avoid: [['autobahn', 'Autobahn'], ['maut', 'Mautstraßen'], ['faehre', 'Fähren'], ['stadt', 'Innenstadt umfahren'], ['schotter', 'Schotter und Feldwege']]
   };
   const LBL = { veh: 'Fahrzeug', curves: 'Kurven (Motorrad)', type: 'Streckenart', scenic: 'Landschaft, bei mir mit Aussicht', avoid: 'Vermeiden' };
   const opts = () => Object.assign({ veh: 'auto', curves: 'egal', type: 'normal', scenic: [], avoid: [] }, A.S.navOpt || {});
@@ -121,10 +122,15 @@
     prevAuto: [['an', 'Vorschau startet nach 12 s von selbst'], ['aus', 'Nur mit „Los“']],
     off: [['an', 'Strecke automatisch offline sichern'], ['aus', 'Nicht sichern']],
     snap: [['an', 'Position auf die Straße einrasten'], ['aus', 'Rohes GPS zeigen']],
-    cam: [['aus', 'Aus'], ['an', 'Feste Blitzer ansagen']]
+    cam: [['aus', 'Aus'], ['an', 'Feste Blitzer ansagen']],
+    brk: [['aus', 'Aus'], ['60', 'Nach 1 Stunde'], ['90', 'Nach 1,5 Stunden'], ['120', 'Nach 2 Stunden'], ['180', 'Nach 3 Stunden']],
+    talk: [['voll', 'Alle Ansagen'], ['kurz', 'Nur Abbiegen und Warnungen']],
+    wx: [['an', 'Beim Start prüfen (Regen, Glätte, Sturm)'], ['aus', 'Nicht prüfen']],
+    lane: [['an', 'Fahrspuren anzeigen (wenn Daten da sind)'], ['aus', 'Aus']],
+    jct: [['an', 'Kreuzungsansicht kurz vor der Abbiegung'], ['aus', 'Aus']]
   };
-  const XL = { rail: 'Warnung vor Bahnübergängen', jam: 'Staus auf der Route (Autobahn)', prev: 'Vor dem Start', prevAuto: 'Vorschau', off: 'Funkloch-Schutz', snap: 'GPS-Anzeige', cam: 'Blitzer-Warnung (für Fahrer verboten, § 23 Abs. 1c StVO – nur Daten aus OpenStreetMap, keine mobilen Blitzer)' };
-  const X = () => Object.assign({ rail: 'unsicher', jam: 'frage', prev: 'an', prevAuto: 'an', off: 'an', snap: 'an', cam: 'aus' }, A.S.navX || {});
+  const XL = { rail: 'Warnung vor Bahnübergängen', jam: 'Staus auf der Route (Autobahn)', prev: 'Vor dem Start', prevAuto: 'Vorschau', off: 'Funkloch-Schutz', snap: 'GPS-Anzeige', brk: 'Pausen-Erinnerung', talk: 'Ansagen', wx: 'Wetter auf der Route', lane: 'Spurassistent', jct: 'Kreuzungsansicht', cam: 'Blitzer-Warnung (für Fahrer verboten, § 23 Abs. 1c StVO – nur Daten aus OpenStreetMap, keine mobilen Blitzer)' };
+  const X = () => Object.assign({ rail: 'unsicher', jam: 'frage', prev: 'an', prevAuto: 'an', off: 'an', snap: 'an', cam: 'aus', brk: 'aus', talk: 'voll', wx: 'an', lane: 'an', jct: 'an' }, A.S.navX || {});
   function setX(patch) { A.S.navX = Object.assign(X(), patch); persist(); renderOpts(); return 'Eingestellt.'; }
   function setSpeech(patch) { A.S.navSpeech = Object.assign(speech(), patch); persist(); renderOpts(); return 'Eingestellt.'; }
   const fold = () => Object.assign({ dir: false, route: false, look: false, map: false, voice: false, extra: false, here: false }, A.S.navFold || {});
@@ -229,7 +235,7 @@
     $('nsRes').addEventListener('click', (e) => {
       const s = e.target.closest('[data-save]'); const h = e.target.closest('[data-i]');
       if (s) { const r = N.results[+s.dataset.ri]; if (r) { setPlace(s.dataset.save, r); A.toast({ home: 'Als Zuhause gespeichert.', work: 'Als Arbeit gespeichert.', fav: 'Als Favorit gespeichert.' }[s.dataset.save], 3000); } return; }
-      if (h) start(N.results[+h.dataset.i]);
+      if (h) { const r0 = N.results[+h.dataset.i]; if (N.pickVia && root.NavPlus) { N.srch = false; layout(); NavPlus.addStop(r0); } else start(r0); }
     });
     $('nsPlaces').addEventListener('toggle', onFold, true);
     $('nsPlaces').addEventListener('click', (e) => {
@@ -276,7 +282,7 @@
       + row('alt', '🔀', 'Andere Route', 'Alternative berechnen')
       + row('share', '📤', 'Ankunft teilen', 'Zeit per Nachricht senden')
       + row('set', '⚙', 'Einstellungen', 'Route, Anzeige, Stimme, Warnungen')
-      + '<div class="mnSec">Zusatzfunktionen</div><div class="mnTiles">'
+      + (root.NavPlus ? NavPlus.menuHTML(row) : '') + '<div class="mnSec">Zusatzfunktionen</div><div class="mnTiles">'
       + tile('rot', DIRS[dirK()][2], 'Karte drehen') + tile('ctr', '🎯', 'Zentrieren') + tile('col', '🎨', 'Kartenfarbe')
       + tile('car', '🚗', 'Zurück zum Auto') + tile('walk', '🚶', 'Zu Fuß weiter') + tile('park', '🅿', 'Hier geparkt') + tile('tacho', '⏱', 'Zum Tacho') + '</div>';
   }
@@ -285,6 +291,7 @@
     const b = e.target.closest('[data-m]'); if (!b) return; const m = b.dataset.m;
     if (m === 'rot') { setDir(null); menuRender(); return; }
     if (m === 'col') { const ks = Object.keys(THEMES); setTheme(ks[(ks.indexOf(A.S.navMap || 'nacht') + 1) % ks.length]); A.toast('Karte: ' + theme().n, 1500); return; }
+    if (root.NavPlus && NavPlus.onMenu(m)) { closeMenu(); return; }
     closeMenu();
     if (m === 'end') stop(true); else if (m === 'off') saveOffline(); else if (m === 'alt') altRoute(); else if (m === 'share') shareEta();
     else if (m === 'ctr') recenter(); else if (m === 'car') backToCar(); else if (m === 'walk') walkOn(); else if (m === 'park') saveHere('park'); else if (m === 'tacho') hide();
@@ -349,7 +356,7 @@
     N.altK = 0; N.dest = dest; N.route = rt; N.ropts = o; N.guide = new Nav.Guide(rt); N.st = null; N.lastRe = Date.now(); N.zoomAuto = true;
     N.pan = { x: 0, y: 0 }; N.offRoads = null; N.jamSeen = {}; N.jamAsk = null; hideAsk(); layout(); hide(); A.onRoute && A.onRoute(true);
     const msg = (o.veh === 'fuss' ? 'Fußweg zu ' : 'Route nach ') + String(dest.name || 'Ziel').split(',')[0] + ': ' + meters(rt.len) + ', etwa ' + sayDur(rt.dur) + '.' + (N.desc && !info.walk ? ' Die Strecke ist ' + N.desc + '.' : '') + (info.noScenic ? ' Landschaftsdaten waren nicht erreichbar.' : '');
-    A.toast(quiet ? 'Los geht’s.' : msg, quiet ? 2500 : 8000); speak((quiet ? '' : msg + ' ') + (rt.steps[0] ? rt.steps[0].say : ''));
+    A.toast(quiet ? 'Los geht’s.' : msg, quiet ? 2500 : 8000); speak((quiet ? '' : msg + ' ') + (rt.steps[0] ? rt.steps[0].say : ''), 'info');
     afterRoute(false); tick(); return msg;
   }
   // ---------- Routenvorschau mit Alternativen (wie Sygic/TomTom) ----------
@@ -360,7 +367,7 @@
     show(); layout(); renderPrev();
     const r0 = res.alts[0], n = res.alts.length;
     const m = 'Route nach ' + String(dest.name || 'Ziel').split(',')[0] + ': ' + meters(r0.len) + ', etwa ' + sayDur(r0.dur) + '.' + (n > 1 ? ' Es gibt ' + (n - 1) + (n === 2 ? ' Alternative.' : ' Alternativen.') : '') + (N.prev.left ? ' Start in ' + N.prev.left + ' Sekunden.' : ' Tippe auf Los.');
-    speak(m);
+    speak(m, 'info');
     if (N.prev.left) N.prevT = setInterval(() => { if (!N.prev) { clearInterval(N.prevT); return; } N.prev.left--; if (N.prev.left <= 0) prevGo(); else { const b = $('npGo'); if (b) b.textContent = 'Los (' + N.prev.left + ')'; } }, 1000);
     return m;
   }
@@ -414,6 +421,7 @@
       if (n) A.toast(n === 1 ? 'Auf der Route: 1 Bahnübergang ohne Schranke' : 'Auf der Route: ' + n + ' Bahnübergänge ohne Schranke', 5000);
     }).catch(() => { /* egal */ });
     if (X().off !== 'aus' && (!keepRoads || !N.offRoads)) autoCache(rt);
+    if (!keepRoads && root.NavPlus) NavPlus.afterRoute(rt);
   }
   // ---------- Warnungen: Bahnübergänge ----------
   const RAILN = { offen: 'Bahnübergang ohne Schranke', gesichert: 'beschrankter Bahnübergang', unbekannt: 'Bahnübergang' };
@@ -512,12 +520,12 @@
     N.srch = false; closeMenu();
     if (N.prev) { prevCancel(); if (!N.route) return 'Vorschau abgebrochen.'; }
     N.jamAsk = null; hideAsk();
-    const was = !!N.route; N.offRoads = null; N.pan = { x: 0, y: 0 }; N.route = null; N.guide = null; N.st = null; N.dest = null;
+    const was = !!N.route; N.offRoads = null; N.pan = { x: 0, y: 0 }; N.route = null; N.guide = null; N.st = null; N.dest = null; N.keepRoute = false; N.via = null; N.pickVia = false;
     layout(); A.onRoute && A.onRoute(false);
     if (was && say) { speak('Navigation beendet.'); A.toast('Navigation beendet.'); }
     return was ? 'Navigation beendet.' : 'Es läuft keine Navigation.';
   }
-  function speak(t) { if (A.S.navVoice === false || !t) return; const sp = speech(), M = MODES[sp.mode] || MODES.normal; A.speak(fun(t, sp.mode), { pitch: M.p, rate: M.r, voice: sp.voice }); }
+  function speak(t, kind) { if (A.S.navVoice === false || !t) return; if (kind === 'info' && X().talk === 'kurz') return; const sp = speech(), M = MODES[sp.mode] || MODES.normal; A.speak(fun(t, sp.mode), { pitch: M.p, rate: M.r, voice: sp.voice }); }
 
   // Zu Fuß weiter: gleiches Ziel, jetzt als Fußweg
   async function walkOn() {
@@ -564,6 +572,8 @@
   }
 
   async function reroute() {
+    if (N.keepRoute) return;
+    if (N.via && N.via.length && root.NavPlus && !N.busy && Date.now() - N.lastRe > 12000) { N.lastRe = Date.now(); return NavPlus.replanVia(); }
     if (N.busy || !N.dest || !here() || Date.now() - N.lastRe < 12000) return;
     N.busy = true; N.lastRe = Date.now();
     try {
@@ -580,7 +590,7 @@
     if (s.say.length) speak(s.say.join('. '));
     if (s.arrived) { const walked = N.ropts && N.ropts.veh === 'fuss', hasCar = !!P().park; speak('Sie haben Ihr Ziel erreicht.' + (walked && hasCar ? ' Für den Rückweg sagen Sie: Zurück zum Auto.' : '')); A.toast(walked && hasCar ? 'Ziel erreicht. Zurück zum Auto: 🚗 tippen.' : 'Ziel erreicht.', 6000); stop(false); return; }
     if (s.off) reroute();
-    paint(s); railCheck(s); camCheck(s); jamCheck(s);
+    paint(s); railCheck(s); camCheck(s); jamCheck(s); if (root.NavPlus) NavPlus.onTick(s);
     if (N.open) {
       $('nsRem').textContent = Nav.fmtDist(s.remain); $('nsEta').textContent = eta(s.remainT); $('nsDur').textContent = Nav.fmtTime(s.remainT);
       draw();
@@ -598,7 +608,7 @@
     if (!N.open || !A.live) return;
     const v = A.live();
     $('lvSpeed').textContent = v.speed; $('lvUnit').textContent = v.unit; $('lvLimit').textContent = v.limit;
-    $('spVal').textContent = v.speed; $('spLim').textContent = v.limit; $('nsSpd').classList.toggle('nolim', !/\d/.test(String(v.limit))); $('lvAlt').textContent = v.alt; $('lvAltN').textContent = v.altName; $('lvDir').textContent = v.dir;
+    $('spVal').textContent = v.speed; $('spLim').textContent = v.limit; { const sp = parseFloat(v.speed), lm = parseFloat(v.limit); $('nsSpd').classList.toggle('over', lm > 0 && sp > lm + 2); } $('nsSpd').classList.toggle('nolim', !/\d/.test(String(v.limit))); $('lvAlt').textContent = v.alt; $('lvAltN').textContent = v.altName; $('lvDir').textContent = v.dir;
   }
   function onFix() {
     tick(); if (N.open && !N.route) gpsInfo();
@@ -761,6 +771,6 @@
     return { navdist: Nav.fmtDist(s.dNext), navturn: s.arrow, navstreet: s.street || s.text || '', navremain: Nav.fmtDist(s.remain), navdur: Nav.fmtTime(s.remainT), naveta: eta(s.remainT), navactive: true };
   }
 
-  function init(api) { A = api; build(); applyLook(); layout(); }
+  function init(api) { A = api; build(); applyLook(); layout(); if (root.NavPlus) NavPlus.init({ A, N, X, opts, here, fromHere, start, commit, layout, speak: (t) => speak(t), draw: () => draw() }); }
   root.NavUI = { prevGo, prevCancel, jamYes, jamNo, setX, setSpeech, setLook, look, navState, dock, backToCar, altRoute, shareEta, setOrient, setDir, recenter, saveOffline, startOffline, setAvoid: (id, on) => { const o = opts(); const l = on ? (o.avoid.includes(id) ? o.avoid : o.avoid.concat(id)) : o.avoid.filter((x) => x !== id); setOpt({ avoid: l }); return l; }, zoomIn: () => zoom(0.55), zoomOut: () => zoom(1.8), zoomAuto: () => { N.zoomAuto = true; draw(); }, setOpt, opts, setTheme, init, show, hide, go, start, stop, onFix, repeat, info, vals, search, saveHere, walkOn, resolve, places: P, active: () => !!N.route, isOpen: () => N.open };
 })(window);

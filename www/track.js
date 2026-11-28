@@ -112,5 +112,6 @@
     return c;
   }
   function png() { const c = image(); return c ? c.toDataURL('image/png') : null; }
-  root.Track = { add, start, stop, clear, stats, png, image, get on() { return st.on; }, get count() { return st.pts.length; }, fmtT, f1, flush: () => persist(true) };
+  const points = () => st.pts.map((q) => ({ lat: q[0], lon: q[1], ele: q[2], t: q[4] }));
+  root.Track = { points, add, start, stop, clear, stats, png, image, get on() { return st.on; }, get count() { return st.pts.length; }, fmtT, f1, flush: () => persist(true) };
 })(typeof window !== 'undefined' ? window : globalThis);

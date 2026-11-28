@@ -68,3 +68,18 @@ Jeder erstellte oder geladene Tacho wird automatisch in `Dokumente/Tacho-Designs
 - **Vier feste Tachos mit Navi** (werden mit der App installiert, Antippen der Kacheln wechselt die Werte): *Tacho Rund Navi* (Nadel, die einzige Ausnahme von „keine runden Instrumente“), *Tacho Eckig Navi*, *Tacho Digital Navi*, *Tacho Balken Navi* (ohne runde Instrumente). Dazu weiterhin Navi Quer, Navi Hochformat, Navi Split und die Tacho-Navi-Vorlagen. Erzeugt mit `node tools/make-navi-tachos.js`.
 - **Werkseinstellungen (Firmware-Reset):** Einstellungen → Zähler → löscht Einstellungen, Zähler, Strecke, eigene Tachos, Navi-Orte und Offline-Routen und startet die App wie neu (mit doppelter Rückfrage).
 - Regel für Designs: Bogen, Nadel und Skala werden als gerade Balken gezeichnet, außer das Element hat `keep:true`. Zahlen bekommen keinen Glow und Schatten.
+
+## Navi-Zusätze (navplus.js)
+Alle im Navi-Menü (⋯ unten rechts) unter „Unterwegs“ und „Strecken“, teils auch per Sprache:
+- **Spurassistent:** Fahrspuren vor der Abbiegung als Leiste, passende Spur hervorgehoben. Daten: OSM-Tag `turn:lanes` (Overpass), nur wo erfasst. Aus unter Einstellungen → Warnungen und Extras.
+- **Kreuzungsansicht (vereinfacht):** kleine Zeichnung der Abbiegung (letzte 70 m und danach) kurz davor, aus der Routengeometrie.
+- **Tankstelle / Rastplatz / Parkplatz auf der Route:** nächste 60 km, mit Entfernung, Umweg und Hinweisen; Antippen macht einen Zwischenstopp daraus. Sprache: „Tankstelle auf der Route“, „Rastplatz“, „Parkplatz auf der Route“.
+- **Zwischenstopps:** Ort suchen und antippen, die Route wird über den Stopp neu berechnet (auch bei Neuberechnung unterwegs).
+- **Höhenprofil:** Auf/Ab, höchster/tiefster Punkt, max. Steigung und Gefälle (Open-Meteo-Höhen).
+- **Wetter auf der Route:** Vorhersage für die Ankunftszeit an fünf Punkten; beim Routenstart Warnung bei Regen, Glätte, Schnee, Sturm, Gewitter (abschaltbar).
+- **GPX:** Strecke laden und abfahren (Abbiegungen werden aus der Linie erkannt, ohne Straßennamen; bei Abweichung wird nicht neu geplant), Route als GPX teilen, gefahrene Strecke als GPX oder erneut fahren.
+- **Pausen-Erinnerung** nach 1, 1,5, 2 oder 3 Stunden Fahrt (Einstellungen → Extras oder „Pausen-Erinnerung nach zwei Stunden“).
+- **Ansagen:** „Alle“ oder „Nur Abbiegen und Warnungen“ („Ansagen kurz“).
+- **Kartenfarbe „Automatisch“:** Tag von 7 bis 19 Uhr, sonst Nacht.
+- **Vermeiden → Schotter und Feldwege** (Valhalla `exclude_unpaved`) und Tempolimit-Anzeige auf der Karte wird rot bei zu schnell.
+Tests der Logik: `node tools/test-navplus.js`.

@@ -79,6 +79,19 @@
     if ((m = s.match(/^(?:ruf|rufe)\s+(?:bei\s+)?(.+?)\s+an$/)) || (m = s.match(/^(?:anrufen|telefonieren mit|telefoniere mit|anruf an|wähle)\s+(.+)$/)) || (m = s.match(/^(.+?)\s+anrufen$/))) return { act: 'phone', a: 'call', name: m[1].replace(/^(den |die |der |meine |meinen |mein )/, '') };
 
     // --- Unterwegs: Tankstellen, Stau ---
+    // --- Navi-Zusätze ---
+    if (/^(?:suche |zeige |finde )?(?:mir )?(?:eine |die )?tankstelle (?:auf der route|unterwegs|auf der strecke|voraus)$|^tanken unterwegs$/.test(s)) return { act: 'navplus', what: 'fuel' };
+    if (/^(?:suche |zeige |finde )?(?:mir )?(?:einen |den )?(?:rastplatz|raststätte|rastplätze)(?: auf der route| unterwegs| voraus)?$|^pause machen$|^ich brauche (?:eine )?pause$/.test(s)) return { act: 'navplus', what: 'rest' };
+    if (/^(?:suche |zeige |finde )?(?:mir )?(?:einen |den )?parkplatz (?:auf der route|unterwegs|voraus)$/.test(s)) return { act: 'navplus', what: 'park' };
+    if (/^(?:navi )?(?:zwischenstopp|zwischenziel)(?: hinzufügen| einplanen| einfügen)?$|^stopp einplanen$/.test(s)) return { act: 'navplus', what: 'via' };
+    if (/^(?:zeige |zeig )?(?:mir )?(?:das |die )?(?:höhenprofil|steigung der route|steigungen)(?: der route)?$/.test(s)) return { act: 'navplus', what: 'prof' };
+    if (/^(?:zeige |zeig )?(?:mir )?(?:das )?(?:wetter (?:auf der route|unterwegs|auf der strecke)|routenwetter)$|^wie wird das wetter unterwegs$/.test(s)) return { act: 'navplus', what: 'wx' };
+    if (/^(?:gpx|strecke|gpx-strecke|gpx strecke)\s*(?:laden|importieren|öffnen)$|^gpx datei laden$/.test(s)) return { act: 'navplus', what: 'gpx' };
+    if (/^(?:route |strecke )?(?:als )?gpx (?:teilen|exportieren)$|^route teilen$/.test(s)) return { act: 'navplus', what: 'gout' };
+    if (/^(?:gefahrene |letzte |meine )?strecke (?:erneut|noch mal|nochmal|wieder) fahren$/.test(s)) return { act: 'navplus', what: 'tgo' };
+    if (/^(?:pause gemacht|pausenzähler zurücksetzen|pause zurücksetzen)$/.test(s)) return { act: 'navplus', what: 'break' };
+    if ((m = s.match(/^(?:navi )?ansagen? (kurz|knapp|nur wichtiges|ausführlich|alle|voll)$/))) return { act: 'navplus', what: /kurz|knapp|wichtig/.test(m[1]) ? 'talk-kurz' : 'talk-voll' };
+    if ((m = s.match(/^pausen-?erinnerung (aus|nach (?:einer|1|anderthalb|eineinhalb|zwei|2|drei|3)(?: und einer halben)?\s*stunden?)$/))) { const w = m[1]; return { act: 'navplus', what: 'brk-' + (w === 'aus' ? 'aus' : /anderthalb|eineinhalb/.test(w) ? '90' : /zwei|2/.test(w) ? '120' : /drei|3/.test(w) ? '180' : '60') }; }
     if (/(tankstelle|tanken|sprit)/.test(s) && !/(tank(füllung)?\s*(anzeigen|ausblenden)|verstecke|blende)/.test(s)) return { act: 'places', tab: 'fuel' };
     if (/\b(stau|staus|verkehr|autobahn ?meldung\w*|verkehrsmeldung\w*)\b/.test(s) && !/(verstecke|ausblenden|entferne|blende)/.test(s)) return { act: 'places', tab: 'jam' };
 

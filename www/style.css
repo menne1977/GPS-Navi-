@@ -405,3 +405,24 @@ body.land.nv-dock .nvD{font-size:min(calc(24px*var(--nv-scale,1)),17cqw)}
 #navscreen #nsTop .nvS{font-size:min(calc(26px*var(--nv-scale,1)),9cqw)}
 #navscreen #nsTop .nvN{font-size:min(calc(17px*var(--nv-scale,1)),7cqw);margin-top:.3em;padding-top:.3em}
 .dz-navi .nvthen{border-top:1px solid #ffffff44;padding-top:.25em;align-self:stretch}
+
+/* ---- Navi-Zusätze (navplus.js) ---- */
+#nsSpd.over{background:#7a1f18e6;border-color:#ff3b30}
+#npSheet{position:fixed;inset:0;z-index:60;background:#000a;display:flex;align-items:flex-end;justify-content:center}
+#npSheet[hidden]{display:none}
+#npSheet .npsBox{width:min(640px,100%);max-height:86vh;overflow:auto;background:#0b1626;border:1px solid #2f8bff66;border-radius:22px 22px 0 0;padding:14px 14px max(16px,env(safe-area-inset-bottom));color:#fff}
+#npSheet .npsHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px} #npSheet .npsHead b{font-size:20px}
+#npSheet .npsHead button{width:46px;height:46px;border-radius:12px;border:1px solid #ffffff44;background:#14233d;color:#fff;font-size:20px}
+#npSheet .npsMsg{opacity:.75;padding:10px 2px;font-size:14px}
+#npSheet .npsRow{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:#10203a;border:1px solid #26385a;border-radius:14px;padding:12px 14px;margin-bottom:8px;color:#fff;position:relative}
+#npSheet .npsRow b{font-size:17px} #npSheet .npsRow small{opacity:.75;font-size:13px} #npSheet .npsRow em{position:absolute;right:12px;top:12px;font-style:normal;font-size:12px;background:#2f8bff;border-radius:999px;padding:4px 10px}
+#npSheet .npsRowS{display:flex;flex-direction:column;gap:2px;background:#10203a;border:1px solid #26385a;border-radius:14px;padding:10px 14px;margin-bottom:8px} #npSheet .npsRowS.warn{border-color:#ff9f1a} #npSheet .npsRowS em{font-style:normal;color:#ffb347;font-weight:700}
+#npSheet canvas{width:100%;height:auto;border-radius:14px;display:block;margin-bottom:10px}
+#npSheet .npsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} #npSheet .npsGrid div{background:#10203a;border-radius:12px;padding:8px;text-align:center} #npSheet .npsGrid small{display:block;opacity:.7;font-size:11px} #npSheet .npsGrid b{font-size:18px}
+#npLane{position:absolute;z-index:5;left:8px;top:calc(env(safe-area-inset-top) + 122px);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+#npLane[hidden]{display:none}
+#npJct{width:132px;height:132px;border-radius:18px;box-shadow:0 4px 16px #0009}
+#npLanes{display:flex;gap:4px;background:#0b1626e6;padding:6px;border-radius:12px;box-shadow:0 4px 16px #0009} #npLanes:empty{display:none}
+#npLanes i{font-style:normal;min-width:34px;height:46px;padding:0 4px;border-radius:8px;border:1px solid #ffffff33;display:flex;align-items:center;justify-content:center;font-size:24px;color:#ffffff55;background:#16233a}
+#npLanes i.on{color:#fff;background:#2f8bff;border-color:#9cc8ff}
+#npBtns{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}

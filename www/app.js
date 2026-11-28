@@ -160,6 +160,7 @@
       }
     }
     if (window.Track) Track.add(R.lat, R.lon, R.alt, v, t, c.accuracy);
+    if (window.NavPlus && NavPlus.onPos) NavPlus.onPos(v, t);
     R.lastPos = { lat: R.lat, lon: R.lon, t, v };
     S.lp = { lat: R.lat, lon: R.lon };
     updateLimit();
@@ -622,6 +623,7 @@
     live: () => { const av = altVals(), h = headingNow(); return { speed: S.decimals ? fmt(R.speed * fu(), 1) : String(Math.round(R.speed * fu())), unit: uName(), limit: R.limit && R.limit.v != null ? String(Math.round(R.limit.v * fu())) : (R.limit && R.limit.kind === 'none' ? '∞' : '–'), alt: av.sel != null ? Math.round(av.sel) + ' m' : '–', altName: 'Höhe ' + ALTN[S.altRef], dir: h != null ? dirName(h) + ' ' + Math.round(h) + '°' : '–' }; },
     speak: (t, o) => { o = o || {}; if (Voice) Voice.speak({ text: t, pitch: o.pitch || 1, rate: o.rate || 1.02, voice: o.voice || '', volume: S.vol }).catch(() => {}); else if (window.speechSynthesis) { try { const u = new SpeechSynthesisUtterance(t); u.lang = 'de-DE'; if (o.pitch) u.pitch = o.pitch; if (o.rate) u.rate = o.rate; if (o.voice) { const v = speechSynthesis.getVoices().find((x) => x.name === o.voice); if (v) u.voice = v; } speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { /* egal */ } } },
     voices: async () => { if (Voice) { const r = await Voice.voices(); return r.voices || []; } return (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter((v) => /^de/i.test(v.lang)).map((v) => ({ name: v.name, network: !v.localService, installed: true })); },
+    saveGpx: (name, text) => (DFiles && DFiles.saveGpx ? DFiles.saveGpx({ name, text }) : Promise.reject(new Error('nur in der APK'))),
     jams: () => { if (S.online && Date.now() - (Places.P.jamT || 0) > 120000) placesApi.refresh(false); return Places.P.jams; }
   });
   $('#bNav').onclick = () => NavUI.show();
@@ -715,6 +717,7 @@
       case 'navgo': return Promise.resolve(NavUI.prevGo(a.n));
       case 'navalt': return NavUI.altRoute();
       case 'navshare': return NavUI.shareEta();
+      case 'navplus': return window.NavPlus ? NavPlus.voice(a.what) : Promise.resolve('Nicht verfügbar.');
       case 'navoffline': return a.name ? NavUI.startOffline(a.name) : NavUI.saveOffline();
       case 'navavoid': if (a.id === 'all') NavUI.setOpt({ avoid: [] }); else NavUI.setAvoid(a.id, a.on); return Promise.resolve(a.say || 'Eingestellt.');
       case 'navsave': return NavUI.saveHere(a.kind, a.label);
@@ -862,7 +865,7 @@
       case 'settotal': S.total = a.n; msg = 'Gesamtkilometer ' + a.n + '.'; break;
       case 'navi': S.navi = a.id; msg = 'Navigation mit ' + NAVI[a.id] + '.'; break;
       case 'phone': phoneAct(a).then((t) => { if (t) say(t); }).catch((e) => say(errMsg(e))); break;
-      case 'openapp': case 'closeapp': case 'sys': case 'scroll': case 'click': case 'type': case 'media': case 'sysvol': case 'split': case 'navto': case 'navopt': case 'navstop': case 'navinfo': case 'navrepeat': case 'navshow': case 'navsave': case 'navwalk': case 'navtheme': case 'navzoom': case 'navavoid': case 'naviorient': case 'navoffline': case 'navalt': case 'navshare': case 'navlook': case 'navjam': case 'navgo':
+      case 'openapp': case 'closeapp': case 'sys': case 'scroll': case 'click': case 'type': case 'media': case 'sysvol': case 'split': case 'navto': case 'navopt': case 'navstop': case 'navinfo': case 'navrepeat': case 'navshow': case 'navsave': case 'navwalk': case 'navtheme': case 'navzoom': case 'navavoid': case 'naviorient': case 'navoffline': case 'navalt': case 'navshare': case 'navlook': case 'navjam': case 'navgo': case 'navplus':
         if (!['sys', 'media', 'sysvol', 'openapp'].includes(a.act) && !/^nav/.test(a.act) && !S.appCtl && a.act !== 'split') { msg = 'Schalte zuerst unter Einstellungen, Apps „Andere Apps per Sprache bedienen“ ein.'; break; }
         appAct(a).then((t) => { if (t) say(t); }).catch((e) => say(errMsg(e)));
         break;
