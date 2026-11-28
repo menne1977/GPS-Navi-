@@ -159,6 +159,7 @@
         R.grade = (l.d - f.d > 40 && v > 8) ? Math.max(-30, Math.min(30, (l.a - f.a) / (l.d - f.d) * 100)) : (v > 8 ? R.grade : null);
       }
     }
+    if (window.Track) Track.add(R.lat, R.lon, R.alt, v, t, c.accuracy);
     R.lastPos = { lat: R.lat, lon: R.lon, t, v };
     S.lp = { lat: R.lat, lon: R.lon };
     updateLimit();
@@ -494,14 +495,31 @@
   const mirrorDesign = (d) => (DFiles ? DFiles.save({ name: d.name, text: JSON.stringify(d) }).catch(() => null) : Promise.resolve(null));
   { const put0 = Design.Store.put; Design.Store.put = async (d) => { const r = await put0(d); mirrorDesign(d); return r; }; }
   // Mitgelieferte Navi-Designs (www/vorlagen) einmalig in die Design-Liste übernehmen
-  const NAVI_TPL = ['Navi-Quer', 'Navi-Hochformat', 'Navi-Split-Hoch', 'Navi-Split-Quer', 'Tacho-Quer-Kacheln', 'Tacho-Navi-Links', 'Tacho-Navi-Band', 'Tacho-Navi-Hoch'];
+  const NAVI_TPL = ['Navi-Quer', 'Navi-Hochformat', 'Navi-Split-Hoch', 'Navi-Split-Quer', 'Tacho-Quer-Kacheln', 'Tacho-Navi-Links', 'Tacho-Navi-Band', 'Tacho-Navi-Hoch', 'Tacho-Rund-Navi', 'Tacho-Eckig-Navi', 'Tacho-Digital-Navi', 'Tacho-Balken-Navi'];
   async function installNaviTpl(force) {
-    if (!force && S.naviTpl === 3) return 0; let n = 0;
+    if (!force && S.naviTpl === 4) return 0; let n = 0;
     for (const f of NAVI_TPL) { try { const r = await fetch('vorlagen/' + f + '.tacho.json'); if (!r.ok) continue; const d = Design.parse(await r.text()); delete d.warn; await Design.Store.put(d); n++; } catch (_) { /* weiter */ } }
-    S.naviTpl = 3; save(true); return n;
+    S.naviTpl = 4; save(true); return n;
   }
   setTimeout(() => installNaviTpl(false).then((n) => { if (n) toast('Neue Tacho-Designs sind da (Antippen wechselt die Werte): Einstellungen → Tacho-Designs.', 7000); }).catch(() => {}), 2500);
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.dz-navi') && window.NavUI) NavUI.show(); });
+  // Streckenbild als PNG speichern (Bilder/Tacho-Strecken), sonst als Download
+  async function saveTrackImage() {
+    if (!window.Track) return;
+    const url = Track.png();
+    if (!url) { toast('Noch keine Strecke aufgezeichnet. Aufzeichnung starten und losfahren.', 5000); return; }
+    const d = new Date(), name = 'Strecke-' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + '-' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
+    if (DFiles && DFiles.saveImage) { const r = await DFiles.saveImage({ name, data: url.split(',')[1] }); toast('Streckenbild gespeichert: ' + (r.path || 'Bilder/Tacho-Strecken'), 7000); return; }
+    const a = document.createElement('a'); a.href = url; a.download = name + '.png'; document.body.appendChild(a); a.click(); a.remove(); toast('Streckenbild heruntergeladen', 5000);
+  }
+  // Werkseinstellungen: lokale Daten, eigene Tachos und Offline-Routen löschen, dann neu starten
+  async function factoryReset() {
+    try { if (window.Track) { Track.stop(); } } catch (_) { /* egal */ }
+    try { localStorage.clear(); } catch (_) { /* egal */ }
+    for (const n of ['tacho-designs', 'navi-offline']) { try { await new Promise((res) => { const r = indexedDB.deleteDatabase(n); r.onsuccess = r.onerror = r.onblocked = () => res(); setTimeout(res, 2000); }); } catch (_) { /* egal */ } }
+    try { if (window.caches) for (const k of await caches.keys()) await caches.delete(k); } catch (_) { /* egal */ }
+    location.reload();
+  }
   async function exportAllDesigns() {
     const l = await Design.Store.list();
     if (!l.length) { toast('Noch keine Designs da', 3000); return; }
@@ -941,9 +959,16 @@
       ${sel('altRef', 'Höhe anzeigen über', [['nn', 'Normalnull (NN, wie auf Karten)'], ['nap', 'Amsterdamer Null (NAP)'], ['ell', 'Ellipsoid (rohe GPS-Höhe, WGS84)']])}
       <div class="row"><label>NAP-Unterschied (m)<small>NAP = NN minus dieser Wert, normal 0</small></label><input type="number" step="0.01" data-k="napOff" value="${S.napOff}" style="width:80px"></div>
       <div class="info">NN ist die Höhe über dem Meer wie in Deutschland üblich. NAP ist der Bezug aus Amsterdam, fast gleich. Das Ellipsoid ist die Höhe über dem Rechenmodell der Erde, sie liegt bei uns rund 45 m höher. Per Sprache: „Höhe über NAP“, „Höhe über Normalnull“, „Höhe Ellipsoid“.</div>`);
+    h += det('track', 'Streckenaufzeichnung (Bild)', () => `
+      <div class="info">Zeichnet die gefahrene Strecke auf und macht daraus ein Bild mit Kilometer, Zeit, Tempo und Steigung. Gespeichert wird nur auf dem Gerät.</div>
+      <div class="row"><label>Aufzeichnung<small>${window.Track ? (Track.on ? 'läuft' : 'aus') + ', ' + Track.count + ' Punkte' : ''}</small></label><span>${window.Track && Track.on ? '●' : '○'}</span></div>
+      <button class="act pri" data-do="trkon">${window.Track && Track.on ? 'Aufzeichnung stoppen' : 'Aufzeichnung starten'}</button>
+      <button class="act" data-do="trkimg">Streckenbild erstellen und speichern</button>
+      <button class="act" data-do="trkclear">Aufzeichnung löschen</button>`);
     h += det('reset', 'Zähler', () => `
       <div class="row"><label>Gesamtkilometer<small>Zähler setzen, z. B. auf den Tachostand</small></label><input type="number" id="totalIn" value="${Math.round(S.total)}" style="width:110px"></div>
-      <button class="act" data-do="rday">Tageskilometer auf null</button><button class="act" data-do="rtrip">Trip auf null</button><button class="act" data-do="rmax">Höchsttempo zurücksetzen</button><button class="act" data-do="rall">Alle Einstellungen zurücksetzen</button>`);
+      <button class="act" data-do="rday">Tageskilometer auf null</button><button class="act" data-do="rtrip">Trip auf null</button><button class="act" data-do="rmax">Höchsttempo zurücksetzen</button><button class="act" data-do="rall">Alle Einstellungen zurücksetzen</button>
+      <button class="act" data-do="rfactory">Werkseinstellungen (Firmware-Reset: alles löschen)</button>`);
     h += `<div class="info">Quellen: OpenStreetMap-Mitwirkende (ODbL) für Straßen und Limits, Open-Meteo für Wetter.</div>`;
     $('#panel').innerHTML = h;
     $('#panel').scrollTop = keep;
@@ -1000,6 +1025,10 @@
     if (d === 'rday') run({ act: 'reset', what: 'day' });
     if (d === 'rtrip') run({ act: 'reset', what: 'trip' });
     if (d === 'rmax') run({ act: 'reset', what: 'max' });
+    if (d === 'trkon') { if (!window.Track) return; if (Track.on) { Track.stop(); toast('Aufzeichnung gestoppt', 3000); } else { Track.start(); toast('Aufzeichnung läuft', 3000); } buildPanel('track'); }
+    if (d === 'trkimg') saveTrackImage().catch((er) => toast('Bild: ' + errMsg(er), 6000));
+    if (d === 'trkclear' && confirm('Aufgezeichnete Strecke löschen?')) { Track.clear(); toast('Strecke gelöscht', 3000); buildPanel('track'); }
+    if (d === 'rfactory' && confirm('Werkseinstellungen: ALLES löschen (Einstellungen, Zähler, Strecke, eigene Tachos, Navi-Orte, Offline-Routen)? Die App startet danach wie neu.') && confirm('Wirklich alles zurücksetzen?')) factoryReset();
     if (d === 'rall' && confirm('Alle Einstellungen und Zähler löschen?')) { try { localStorage.removeItem('tacho2'); } catch (_) { /* egal */ } location.reload(); }
   });
   $('#panel').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'cmdIn') { const v = e.target.value; if (v) heard(v); } });

@@ -80,6 +80,35 @@ public class FilesPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void saveImage(PluginCall call) {
+        String name = call.getString("name"), data64 = call.getString("data");
+        if (name == null || data64 == null) { call.reject("Name oder Bild fehlt"); return; }
+        String file = safe(name) + ".png";
+        try {
+            byte[] data = android.util.Base64.decode(data64, android.util.Base64.DEFAULT);
+            String where;
+            if (Build.VERSION.SDK_INT >= 29) {
+                ContentResolver cr = getContext().getContentResolver();
+                ContentValues v = new ContentValues();
+                v.put(MediaStore.MediaColumns.DISPLAY_NAME, file);
+                v.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+                v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Tacho-Strecken/");
+                Uri u = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+                if (u == null) throw new Exception("Ordner nicht beschreibbar");
+                try (OutputStream o = cr.openOutputStream(u, "wt")) { o.write(data); }
+                where = "Bilder/Tacho-Strecken/" + file;
+            } else {
+                File d = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Tacho-Strecken");
+                d.mkdirs();
+                File f = new File(d, file);
+                try (FileOutputStream o = new FileOutputStream(f)) { o.write(data); }
+                where = f.getAbsolutePath();
+            }
+            JSObject r = new JSObject(); r.put("path", where); call.resolve(r);
+        } catch (Exception e) { call.reject("Bild speichern fehlgeschlagen: " + e.getMessage()); }
+    }
+
+    @PluginMethod
     public void list(PluginCall call) {
         JSArray out = new JSArray();
         try {

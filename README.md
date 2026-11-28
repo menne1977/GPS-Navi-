@@ -62,3 +62,9 @@ Jeder erstellte oder geladene Tacho wird automatisch in `Dokumente/Tacho-Designs
 - **Menü:** Kacheln für Ziele, einklappbare Einstellungen; Querformat mit Karte links und Infos rechts.
 - **Navi-Designs:** Navi Quer, Navi Hochformat, Navi Split Hoch, Navi Split Quer (Navi auf einem Viertel, Blau-Grau, Tempo grün, Rest gelb, Ankunft orange). Einstellungen → Tacho-Designs → „Navi-Designs verwenden“.
 - **Blitzer-Warnung (optional, standardmäßig aus):** feste Blitzer aus OpenStreetMap mit Tempolimit, Ansage etwa 400–900 m vorher. Hinweis: Für Fahrzeugführer (auch Radfahrer) ist die Nutzung während der Fahrt verboten (§ 23 Abs. 1c StVO). Keine mobilen Blitzer.
+
+## Ergänzungen (Streckenbild, feste Tachos, Reset)
+- **Streckenaufzeichnung als Bild:** Einstellungen → Streckenaufzeichnung. Start/Stopp, dann „Streckenbild erstellen“. Das PNG zeigt die Strecke (nach Tempo gefärbt) mit Kilometer, Fahrzeit, Gesamtzeit, Ø- und Höchsttempo, Steigung (max.), Höhenmeter auf/ab und einem Höhen-/Tempoprofil. Gespeichert in Bilder/Tacho-Strecken. Nur lokal.
+- **Vier feste Tachos mit Navi** (werden mit der App installiert, Antippen der Kacheln wechselt die Werte): *Tacho Rund Navi* (Nadel, die einzige Ausnahme von „keine runden Instrumente“), *Tacho Eckig Navi*, *Tacho Digital Navi*, *Tacho Balken Navi* (ohne runde Instrumente). Dazu weiterhin Navi Quer, Navi Hochformat, Navi Split und die Tacho-Navi-Vorlagen. Erzeugt mit `node tools/make-navi-tachos.js`.
+- **Werkseinstellungen (Firmware-Reset):** Einstellungen → Zähler → löscht Einstellungen, Zähler, Strecke, eigene Tachos, Navi-Orte und Offline-Routen und startet die App wie neu (mit doppelter Rückfrage).
+- Regel für Designs: Bogen, Nadel und Skala werden als gerade Balken gezeichnet, außer das Element hat `keep:true`. Zahlen bekommen keinen Glow und Schatten.
