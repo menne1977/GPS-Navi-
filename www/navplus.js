@@ -305,6 +305,7 @@
   }
   // Beim Routenstart still prüfen, nur bei Warnungen melden
   function afterRoute(rt) {
+    for (const k in LC) delete LC[k];
     if (!rt || A.S.online === false || X().wx === 'aus') return;
     wxCheck(rt, true).then((o) => {
       if (N.route !== rt) return; const w = [...new Set(o.flatMap((x) => x.warn))]; if (!w.length) return;
@@ -312,6 +313,7 @@
     }).catch(() => { /* egal */ });
   }
 
+  const LC = {}; // Fahrspur-Cache je Abbiegung
   // ----- Pausen-Erinnerung -----
   const P = { drive: 0, still: 0, last: 0, warned: 0 };
   function onPos(vKmh, t) {
@@ -326,7 +328,6 @@
   }
 
   // ----- Spurassistent und Kreuzungsansicht -----
-  const LC = {}; // Cache je Abbiegung
   let panel = null;
   function ensurePanel() {
     if (panel) return panel; const scr = $('navscreen'); if (!scr) return null;

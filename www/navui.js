@@ -352,6 +352,7 @@
   function commit(dest, rt, info0, o, quiet) {
     const info = Object.assign({}, info0 || {}, { curv: rt.curv || (info0 && info0.curv), scenic: rt.scenic || null });
     N.prev = null; clearInterval(N.prevT);
+    if (!(info0 && info0.gpx)) N.keepRoute = false; if (!(info0 && info0.via)) N.via = null;
     N.info = info; N.desc = info.walk ? 'ein Fußweg' : Nav.describe({ rt, info });
     N.altK = 0; N.dest = dest; N.route = rt; N.ropts = o; N.guide = new Nav.Guide(rt); N.st = null; N.lastRe = Date.now(); N.zoomAuto = true;
     N.pan = { x: 0, y: 0 }; N.offRoads = null; N.jamSeen = {}; N.jamAsk = null; hideAsk(); layout(); hide(); A.onRoute && A.onRoute(true);
